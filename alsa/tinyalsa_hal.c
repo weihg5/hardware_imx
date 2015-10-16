@@ -257,16 +257,21 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
     /* Go through the route array and set each value */
     i = 0;
     while (route[i].ctl_name) {
+		ALOGE("%s: ctl_name = %s, enable = %s", __FUNCTION__, route[i].ctl_name, enable ? "true" : "false");
         ctl = mixer_get_ctl_by_name(mixer, route[i].ctl_name);
-        if (!ctl)
+        if (!ctl) {
+			ALOGE("%s: ctl_name = %s not found", __FUNCTION__, route[i].ctl_name);
             return -EINVAL;
+        }
 
         if (route[i].strval) {
+			ALOGE("%s: strval = %s", __FUNCTION__, route[i].strval);
             if (enable)
                 mixer_ctl_set_enum_by_string(ctl, route[i].strval);
             else
                 mixer_ctl_set_enum_by_string(ctl, "Off");
         } else {
+			ALOGE("%s: intval = %d", __FUNCTION__, route[i].intval);
             /* This ensures multiple (i.e. stereo) values are set jointly */
             for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
                 if (enable)
@@ -389,7 +394,7 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGV("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGE("%s: headphone %d ,headset %d ,speaker %d, earpiece %d\n", __FUNCTION__, headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);
@@ -462,6 +467,8 @@ static void select_input_device(struct imx_audio_device *adev)
         headset_on = adev->in_device & AUDIO_DEVICE_IN_WIRED_HEADSET;
         main_mic_on = adev->in_device & AUDIO_DEVICE_IN_BUILTIN_MIC;
     }
+
+    ALOGE("%s: bt_on %d, headset %d, main_mic_on %d\n", __FUNCTION__, bt_on, headset_on, main_mic_on);
 
    /* TODO: check how capture is possible during voice calls or if
     * both use cases are mutually exclusive.
@@ -1571,7 +1578,7 @@ static int start_input_stream(struct imx_stream_in *in)
     struct mixer *mixer;
     int rate = 0, channels = 0, format = 0;
 
-    ALOGW("start_input_stream....");
+    ALOGW("%s: mode = %d", __FUNCTION__, adev->mode);
 
     adev->active_input = in;
     if (adev->mode != AUDIO_MODE_IN_CALL) {

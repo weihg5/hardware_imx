@@ -29,6 +29,10 @@
 #define MIXER_WM8962_CAPTURE_SWITCH                 "Capture Switch"
 #define MIXER_WM8962_CAPTURE_VOLUME                 "Capture Volume"
 
+#define MIXER_WM8962_INPGAR_IN2L_SWITCH             "INPGAL IN2L Switch"
+#define MIXER_WM8962_MIXINL_IN2L_SWITCH             "MIXINL IN2L Switch"
+#define MIXER_WM8962_MIXINL_IN2L_VOLUME             "MIXINL IN2L Volume"
+
 #define MIXER_WM8962_INPGAR_IN3R_SWITCH             "INPGAR IN3R Switch"
 #define MIXER_WM8962_MIXINR_IN3R_SWITCH             "MIXINR IN3R Switch"
 #define MIXER_WM8962_MIXINR_IN3R_VOLUME             "MIXINR IN3R Volume"
@@ -125,6 +129,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
         .ctl_name = MIXER_WM8962_MIXINR_PGA_VOLUME,
         .intval = 7,
     },*/
+#if 0
     {
         .ctl_name = MIXER_WM8962_MIXINR_IN3R_SWITCH,
         .intval = 1,
@@ -133,6 +138,16 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
         .ctl_name = MIXER_WM8962_MIXINR_IN3R_VOLUME,
         .intval = 7,
     },
+#else
+	{
+		.ctl_name = MIXER_WM8962_MIXINL_IN2L_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = MIXER_WM8962_MIXINL_IN2L_VOLUME,
+		.intval = 7,
+	},
+#endif
     {
         .ctl_name = NULL,
     },
