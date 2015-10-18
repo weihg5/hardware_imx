@@ -84,7 +84,7 @@ static struct route_setting speaker_output_wm8962[] = {
     },
     {
         .ctl_name = "HPOUTL PGA",
-        .strval = "ADC",
+        .strval = "DAC",
     },
 #endif
     {
@@ -104,7 +104,7 @@ static struct route_setting hs_output_wm8962[] = {
 #if WM8962_DEBUG
     {
         .ctl_name = "HPOUTL PGA",
-        .strval = "ADC",
+        .strval = "DAC",
     },
 #endif
     {
