@@ -20,6 +20,7 @@
 
 #include "audio_hardware.h"
 
+#define WM8962_DEBUG	1
 
 #define MIXER_WM8962_SPEAKER_VOLUME                 "Speaker Volume"
 #define MIXER_WM8962_SPEAKER_SWITCH                 "Speaker Switch"
@@ -72,6 +73,20 @@ static struct route_setting speaker_output_wm8962[] = {
         .ctl_name = MIXER_WM8962_SPEAKER_VOLUME,
         .intval = 121,
     },
+#if WM8962_DEBUG
+    {
+        .ctl_name = MIXER_WM8962_HEADPHONE_SWITCH,
+        .intval = 1,
+    },
+    {
+        .ctl_name = MIXER_WM8962_HEADPHONE_VOLUME,
+        .intval = 121,
+    },
+    {
+        .ctl_name = "HPOUTL PGA",
+        .strval = "ADC",
+    },
+#endif
     {
         .ctl_name = NULL,
     },
@@ -86,6 +101,12 @@ static struct route_setting hs_output_wm8962[] = {
         .ctl_name = MIXER_WM8962_HEADPHONE_VOLUME,
         .intval = 121,
     },
+#if WM8962_DEBUG
+    {
+        .ctl_name = "HPOUTL PGA",
+        .strval = "ADC",
+    },
+#endif
     {
         .ctl_name = NULL,
     },
@@ -147,6 +168,32 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 		.ctl_name = MIXER_WM8962_MIXINL_IN2L_VOLUME,
 		.intval = 7,
 	},
+#endif
+#if WM8962_DEBUG
+    {
+        .ctl_name = "HPMIXL MIXINL Switch",
+        .intval = 1,
+    },
+    {
+        .ctl_name = "HPMIXL MIXINR Switch",
+        .intval = 1,
+    },
+    {
+        .ctl_name = "Headphone Mixer Switch",
+        .intval = 1,
+    },
+    {
+        .ctl_name = "HPOUTL PGA",
+        .strval = "Mixer",
+    },
+    {
+        .ctl_name = MIXER_WM8962_HEADPHONE_SWITCH,
+        .intval = 1,
+    },
+    {
+        .ctl_name = MIXER_WM8962_HEADPHONE_VOLUME,
+        .intval = 121,
+    },
 #endif
     {
         .ctl_name = NULL,
