@@ -82,11 +82,11 @@ static struct route_setting speaker_output_wm8962[] = {
         .ctl_name = MIXER_WM8962_HEADPHONE_VOLUME,
         .intval = 121,
     },
+#endif
     {
         .ctl_name = "HPOUTL PGA",
         .strval = "DAC",
     },
-#endif
     {
         .ctl_name = NULL,
     },
@@ -101,12 +101,10 @@ static struct route_setting hs_output_wm8962[] = {
         .ctl_name = MIXER_WM8962_HEADPHONE_VOLUME,
         .intval = 121,
     },
-#if WM8962_DEBUG
     {
         .ctl_name = "HPOUTL PGA",
         .strval = "DAC",
     },
-#endif
     {
         .ctl_name = NULL,
     },
@@ -169,7 +167,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 		.intval = 7,
 	},
 #endif
-#if WM8962_DEBUG
+#if 0 // WM8962_DEBUG
     {
         .ctl_name = "HPMIXL MIXINL Switch",
         .intval = 1,
