@@ -28,11 +28,15 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 
+
+#ifdef _ANDROID
 #include <asm-generic/termbits.h>
 #include <asm-generic/ioctls.h>
-
 #include <private/android_filesystem_config.h>
 #include <cutils/log.h>
+
+#endif
+
 #include <dirent.h>
 
 
@@ -45,26 +49,77 @@ char PTT_SYSFS[W_SYSFS_SIZE]; // ptt 1=recv, 0=send
 char PD_SYSFS[W_SYSFS_SIZE];  //0=sleep
 char HL_SYSFS[W_SYSFS_SIZE]; // 0=0.5w, 1=1w
 
-#define LOG_TAG "wireless_ptt"
+#ifdef _ANDROID
+//#define LOG_TAG "wireless_ptt"
 #define RFS_ERR(fmt, arg...)  ALOGE("wireless:"fmt"\n" , ##arg)
 
 #define RFS_START_FUNC()      ALOGE("wireless: Inside %s", __FUNCTION__)
 #define RFS_DBG(fmt, arg...)  ALOGE("wireless:"fmt"\n" , ## arg)
 #define RFS_INFO(fmt, arg...)  ALOGE("wireless:"fmt"\n" , ## arg)
+#else
 
+#define RFS_ERR(fmt, arg...)  printf("wireless:"fmt"\n" , ##arg)
 
-/* Maintains the exit state of UIM*/
-static int exiting;
+#define RFS_START_FUNC()      printf("wireless: Inside %s", __FUNCTION__)
+#define RFS_DBG(fmt, arg...)  printf("wireless:"fmt"\n" , ## arg)
+#define RFS_INFO(fmt, arg...)  printf("wireless:"fmt"\n" , ## arg)
+#endif
 
+static void process_mode(char *);
+static void set_speek_dir(char *);
+static void set_power(char *);
+static void set_sqiut(char *);
+static void exit_func(char *);
+static void set_sleep(char *);
 /* File descriptor for the UART device*/
-int dev_fd;
+int dev_fd = -1;
+typedef void (*modefunc)(char *);
 
+struct mode_func{
+	char *cmd;
+	modefunc func;
+	char *p;
+};
+static struct mode_func _mode[] = {
+	{"SEND", set_speek_dir, "SNED"},
+	{"RECV", set_speek_dir, "RECV"},
+	
+	{"LOW", set_power, "LOW"},
+	{"HIGH", set_power, "HIGH"},
+
+	{"SLEEP", set_sleep, "SLEEP"},
+	{"WAKE", set_sleep, "WAKE"},
+
+	{"ON", set_sqiut, "ON"},
+	{"OFF", set_sqiut, "OFF"},
+	{"EXIT", exit_func, ""},
+	{NULL, NULL, NULL},
+};
+
+static void process_mode(char *buf)
+{
+	int i;
+	for (i = 0; ; i++){
+		if (_mode[i].cmd == NULL)
+			return;
+		//RFS_DBG("mode cmd=%s\n", _mode[i].cmd);
+		if (strcmp(_mode[i].cmd, buf) == 0)
+		{
+			RFS_DBG("found cmd:%s", buf);
+			_mode[i].func(buf);
+		}
+	}
+	
+}
 static void set_speek_dir(char *dir)
 {
 	char val;
 	int sval = 0;
 	int fd = open((const char*) PTT_SYSFS, O_RDWR);
-	
+	if (fd < 0){
+		RFS_ERR("open file %s Error\n", PTT_SYSFS);
+		return;
+	}
 	if (!memcmp(dir, "SEND", 4)){
 		val = '0';
 	}else if (!memcmp(dir, "RECV", 4)){
@@ -83,7 +138,10 @@ static void set_power(char *power)
 	char val;
 	int sval = 0;
 	int fd = open((const char*) HL_SYSFS, O_RDWR);
-	
+	if (fd < 0){
+		RFS_ERR("open file %s Error\n", HL_SYSFS);
+		return;
+	}	
 	if (!memcmp(power, "LOW", 4)){
 		val = '0';
 	}else if (!memcmp(power, "HIGH", 4)){
@@ -102,7 +160,10 @@ static void set_sleep(char *sleep)
 	char val;
 	int sval = 0;
 	int fd = open((const char*) PD_SYSFS, O_RDWR);
-	
+	if (fd < 0){
+		RFS_ERR("open file %s Error\n", PD_SYSFS);
+		return;
+	}	
 	if (!memcmp(sleep, "SLEEP", 4)){
 		val = '0';
 	}else if (!memcmp(sleep, "WAKE", 4)){
@@ -121,7 +182,10 @@ static void set_sqiut(char *sq)
 	char val;
 	int sval = 0;
 	int fd = open((const char*) SQ_SYSFS, O_RDWR);
-	
+	if (fd < 0){
+		RFS_ERR("open file %s Error\n", SQ_SYSFS);
+		return;
+	}	
 	if (!memcmp(sq, "ON", 4)){
 		val = '0';
 	}else if (!memcmp(sq, "OFF", 4)){
@@ -140,7 +204,10 @@ static int set_vox_detect()
 	char buf[4];
 	int val = 0;
 	int fd = open((const char*) VOXDEC_SYSFS, O_RDONLY);
-	
+	if (fd < 0){
+		RFS_ERR("open file %s Error\n", VOXDEC_SYSFS);
+		return 0;
+	}	
 	if (read(fd, buf, 4) != 4)
 		return 0;
 	
@@ -164,26 +231,6 @@ static inline void cleanup(int failed)
 	/* unused failed for future reference */
 }
 
-/*****************************************************************************/
-/*  Function to Read the firmware version
- *  module into the system. Currently used for
- *  debugging purpose, whenever the baud rate is changed
- */
-void read_firmware_version()
-{
-	int index = 0;
-	char resp_buffer[20] = { 0 };
-	unsigned char buffer[] = { 0x01, 0x01, 0x10, 0x00 };
-
-	RFS_START_FUNC();
-	RFS_INFO(" wrote %d bytes", (int)write(dev_fd, buffer, 4));
-	RFS_INFO(" reading %d bytes", (int)read(dev_fd, resp_buffer, 15));
-
-	for (index = 0; index < 15; index++)
-		RFS_INFO(" %x ", resp_buffer[index]);
-
-	printf("\n");
-}
 
 /* Function to set the default baud rate
  *
@@ -193,6 +240,7 @@ void read_firmware_version()
  */
 static int uart_config()
 {
+#ifdef _ANDROID
 	struct termios ti;
 
 	fcntl(dev_fd, F_SETFL,fcntl(dev_fd, F_GETFL) | O_NONBLOCK);	
@@ -223,6 +271,7 @@ static int uart_config()
 	tcsetattr(dev_fd, TCSANOW, &ti);
 
 	tcflush(dev_fd, TCIOFLUSH);
+#endif	
 	RFS_DBG(" set_baud_rate() done");
 
 	return 0;
@@ -235,6 +284,7 @@ static int uart_config()
  * The baud rate is then changed to custom baud rate by this function*/
 static int set_custom_baud_rate(int cust_baud_rate, unsigned char flow_ctrl)
 {
+#ifdef _ANDROID
 	RFS_START_FUNC();
 
 	struct termios ti;
@@ -276,7 +326,7 @@ static int set_custom_baud_rate(int cust_baud_rate, unsigned char flow_ctrl)
 	ti2.c_cflag |= BOTHER;
 	ti2.c_ospeed = cust_baud_rate;
 	ioctl(dev_fd, TCSETS2, &ti2);
-
+#endif
 	RFS_DBG(" set_custom_baud_rate() done");
 	return 0;
 }
@@ -291,7 +341,7 @@ int uart_open()
 {
 	unsigned char uart_dev_name[32];
 	unsigned char buf[32];
-
+	int fd,len;
 	memset(buf, 0, 32);
 	fd = open(DEV_NAME_SYSFS, O_RDONLY);
 	if (fd < 0) {
@@ -338,14 +388,126 @@ static int dir_filter(const struct dirent *name)
     return 0;
 }
 
+static void msleep(int msec)
+{
+	struct timespec req, rem;
+	int ret = 0;
+	req.tv_sec = msec/1000;
+	msec = msec - req.tv_sec*1000;
+	req.tv_nsec = msec*1000*1000;
+	do {
+		ret = nanosleep(&req, &rem);
+		if (ret == -1 && errno == EINTR){
+			req.tv_sec = rem.tv_sec;
+			req.tv_nsec = rem.tv_nsec;
+		}else{
+			if (ret)
+				RFS_ERR("nanosleep error, ret=%d, error=%d\n", ret, errno);
+			break;
+		}
+	}while(!ret);
+}
+static int g_exit = 0;
+void exit_func(char *p)
+{
+	(void)p;
+	g_exit = 1;
+}
+
+void send_cmd_wait_ack(char *buf)
+{
+	int ret ;
+	char rbuf[128];
+	int recv_num = 0;
+	memset(rbuf, 0, 128);
+
+	ret = write(dev_fd, buf, strlen(buf));
+	if (ret < (int)strlen(buf)){
+		RFS_ERR("tty send failt, ret=%d\n", ret);
+		return;
+	}	
+	msleep(1000);
+	do {
+		ret = read(dev_fd, rbuf+recv_num, 1);
+		if (ret==1){
+			recv_num++;
+		}else{
+			break;
+		}
+	}while(1);
+	if (recv_num)
+		RFS_DBG("RECV :-->%s\n", rbuf);
+	else
+		RFS_ERR("RECV NULL\n");
+}
+
+void process_cmd(char *buf)
+{
+	RFS_DBG("CMD: %s\n", buf);
+	if (strlen(buf) < 4 || memcmp("AT+", buf, 3)){
+		RFS_DBG("cmd buf error %s\n", buf);
+		return;
+	}
+
+	if (!memcmp(buf, "AT+DMOMES", 9)){
+		if (strlen(buf) < 12){
+			RFS_ERR("SMS len is too short=%d\n", strlen(buf));
+			return;
+		}
+		char len = buf[10];
+		buf[10]=len-'0';
+		if (buf[10] == 0)
+			return;
+		RFS_DBG("SMS len=%d\n", buf[10]);
+		send_cmd_wait_ack(buf);
+	}else{
+		send_cmd_wait_ack(buf);
+	}
+}
+
+void process_commands(void)
+{
+	char buf[256];
+	char cmd[16];
+	char args[128];
+	int argv = 0;
+	char *p;
+	memset(buf, 0, 245);
+	
+	RFS_INFO("Pls enter the MODE or CMD :");
+	
+	p = fgets(buf, 100, stdin);
+	if (p==NULL)
+		return;
+	
+	RFS_DBG("get buf: --> %s\n", p);
+	
+	argv = sscanf(p, "%s %s", cmd, args);
+	if (!memcmp(cmd, "MODE", 4))
+	{
+		if (argv != 2) {
+			RFS_DBG("process mode error");
+			return;
+		}
+		RFS_DBG("process mode %s\n", args);
+		process_mode(args);
+	}
+	if (!memcmp(cmd, "ATCMD", 3))
+	{
+		if (argv != 2) {
+			RFS_DBG("process ATCMD error");
+			return;
+		}
+		RFS_DBG("process ATCMD %s\n", args);
+		process_cmd(args);
+	}	
+}
 /*****************************************************************************/
 int main(int argc, char *argv[])
 {
-	int st_fd,err;
+#ifdef _ANDROID
+	int err;
 	struct stat file_stat;
-
-	struct pollfd   p;
-	unsigned char install;
 
 	int i, n;
 	struct dirent **namelist;
@@ -415,7 +577,15 @@ int main(int argc, char *argv[])
 		RFS_DBG("File %s is not found\n", VOXDEC_SYSFS);
 		return -1;
 	}	
-
+	if (uart_open() < 0){
+		RFS_ERR("open  uart  failt\n");
+		return -1;
+	}
+#endif	
+	while(!g_exit){
+		process_commands();
+	}
+	cleanup(1);
 
 	return 0;
 }
