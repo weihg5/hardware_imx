@@ -97,6 +97,50 @@ LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_TAGS := eng
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+#
+# UIM Application
+#
+
+
+LOCAL_SRC_FILES:= \
+	camera_test.cpp
+LOCAL_SHARED_LIBRARIES:= \
+    libcamera_client \
+    libui \
+    libutils \
+    libcutils \
+    libbinder \
+    libmedia \
+    libhardware_legacy \
+    libdl \
+    libc \
+    libjpeg \
+    libjhead \
+    libion \
+    libcamera_metadata \
+    libg2d \
+    lib_vpu_wrapper
+
+LOCAL_C_INCLUDES += \
+	frameworks/base/include/binder \
+	frameworks/base/include/ui \
+	frameworks/base/camera/libcameraservice \
+	hardware/imx/mx6/libgralloc_wrapper \
+	system/media/camera/include \
+	external/jpeg \
+	external/jhead \
+        device/fsl-proprietary/include \
+        external/fsl_vpu_omx/OpenMAXIL/src/component/vpu_wrapper \
+        external/fsl_imx_omx/OpenMAXIL/src/component/vpu_wrapper
+#LOCAL_CFLAGS:= -g -c -W -Wall -O2 -D_POSIX_SOURCE
+LOCAL_CFLAGS += -fno-short-enums
+LOCAL_MODULE:=camtest
+LOCAL_MODULE_TAGS:= eng
+include $(BUILD_EXECUTABLE)
+
 endif
 
 endif

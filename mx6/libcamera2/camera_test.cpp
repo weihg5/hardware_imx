@@ -28,8 +28,10 @@
 #include "gralloc_priv.h"
 #include <linux/videodev2.h>
 #include <hardware/camera2.h>
+#include <sys/atomics.h>
 
 #include <ion/ion.h>
+using namespace android;
 
 struct StreamBuffer {
 	int mIndex;
@@ -48,11 +50,11 @@ struct StreamBuffer {
 };
 
 struct v4l2_capability     mCap;
-struct StreamBuffer *mCameraBuffer[3];
+struct StreamBuffer mCameraBuffer[3];
 int mIonFd = -1;
 int mCamFd = -1;
 
-#define DEV_NAME "/dev/video0"
+#define DEV_NAME "/dev/video1"
 
 #define FLOG_TRACE(format, ...) ALOGI((format), ## __VA_ARGS__)
 #define FLOGI(format, ...) ALOGI((format), ## __VA_ARGS__)
@@ -121,7 +123,7 @@ int startDevice()
     int state;
     struct v4l2_buffer buf;
     for (int i = 0; i < 3; i++) {
-        StreamBuffer* frame = mCameraBuffer[i];
+        StreamBuffer* frame = &mCameraBuffer[i];
 
         memset(&buf, 0, sizeof (struct v4l2_buffer));
         buf.index    = i;
@@ -151,7 +153,7 @@ int startDevice()
 
 
 int registerCameraBuffers(StreamBuffer *pBuffer,
-                                             int        & num)
+                                             int        num)
 {
     status_t ret = NO_ERROR;
 
@@ -174,7 +176,7 @@ int registerCameraBuffers(StreamBuffer *pBuffer,
 
     struct v4l2_buffer buf;
     for (int i = 0; i < num; i++) {
-        CameraFrame *buffer = pBuffer + i;
+        StreamBuffer *buffer = pBuffer + i;
         memset(&buf, 0, sizeof (buf));
         buf.index    = i;
         buf.type     = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -308,7 +310,7 @@ int initSensorInfo()
 
     // first read sensor format.
     int ret = 0, index = 0;
-    int sensorFormats[MAX_SENSOR_FORMAT];
+    int sensorFormats[20];
  //   memset(mAvailableFormats, 0, sizeof(mAvailableFormats));
     memset(sensorFormats, 0, sizeof(sensorFormats));
 
@@ -379,8 +381,10 @@ int initSensorInfo()
 int initV4lDevice()
 {
 	mCamFd = open(DEV_NAME, O_RDWR);
-	if (mCamFd < 0)
+	if (mCamFd < 0) {
+		FLOGE("open %s failed: %s", DEV_NAME, strerror(errno));
 		return -1;
+	}
     int ret = NO_ERROR;
     ret = ioctl(mCamFd, VIDIOC_QUERYCAP, &mCap);
     if (ret < 0) {
@@ -396,6 +400,7 @@ int initV4lDevice()
         return BAD_VALUE;
     }
 	initSensorInfo();
+	return 0;
 }
 
 int allocateBuffers(int width,int height,
@@ -488,6 +493,28 @@ int allocateBuffers(int width,int height,
     return NO_ERROR;
 }
 
+int acquireCameraFrame()
+{
+    int ret;
+
+    struct v4l2_buffer cfilledbuffer;
+    memset(&cfilledbuffer, 0, sizeof (cfilledbuffer));
+    cfilledbuffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    cfilledbuffer.memory = V4L2_MEMORY_USERPTR;
+
+    /* DQ */
+    ret = ioctl(mCamFd, VIDIOC_DQBUF, &cfilledbuffer);
+    if (ret < 0) {
+        FLOGE("GetFrame: VIDIOC_DQBUF Failed");
+        return NULL;
+    }
+
+    int index = cfilledbuffer.index;
+	FLOGE("Get Frame index=%d\n", index);
+    return index;
+}
+
+
 int main()
 {
 	initV4lDevice();
@@ -496,6 +523,11 @@ int main()
 	setDeviceConfig(1280, 720, HAL_PIXEL_FORMAT_YCbCr_420_SP, 30);
 	
 	startDevice();
+
+
+	acquireCameraFrame();
+
+	close(mCamFd);
 }
 
 
