@@ -40,7 +40,7 @@
 #include <dirent.h>
 
 
-#define W_SYSFS_SIZE 64
+#define W_SYSFS_SIZE 256
 
 char DEV_NAME_SYSFS[W_SYSFS_SIZE];
 char SQ_SYSFS[W_SYSFS_SIZE];// noiseSQ_SYSFS
@@ -129,7 +129,8 @@ static void set_speek_dir(char *dir)
 		return;
 	}
 	sval = (int)val;
-	write(fd, &val, 4);
+	if (write(fd, &sval, 4) != 4)
+		RFS_ERR("write file %s Error\n", PTT_SYSFS);
 	close(fd);
 }
 
@@ -151,7 +152,9 @@ static void set_power(char *power)
 		return;
 	}
 	sval = (int)val;
-	write(fd, &val, 4);
+	if (write(fd, &sval, 4) != 4)
+		RFS_ERR("write file %s Error\n", HL_SYSFS);
+
 	close(fd);
 }
 
@@ -173,7 +176,9 @@ static void set_sleep(char *sleep)
 		return;
 	}
 	sval = (int)val;
-	write(fd, &val, 4);
+	if (write(fd, &sval, 4) != 4)
+		RFS_ERR("write file %s Error\n", PD_SYSFS);
+
 	close(fd);
 }
 
@@ -195,7 +200,9 @@ static void set_sqiut(char *sq)
 		return;
 	}
 	sval = (int)val;
-	write(fd, &val, 4);
+	if (write(fd, &sval, 4) != 4)
+		RFS_ERR("write file %s Error\n", SQ_SYSFS);
+
 	close(fd);
 }
 
@@ -503,6 +510,8 @@ void process_commands(void)
 	}	
 }
 /*****************************************************************************/
+#define SYS_FS_DEVICES_DIR "/sys/bus/platform/devices"
+
 int main(int argc, char *argv[])
 {
 #ifdef _ANDROID
@@ -515,7 +524,7 @@ int main(int argc, char *argv[])
 	RFS_START_FUNC();
 	err = 0;
 
-	n = scandir("/sys/devices", &namelist, dir_filter, alphasort);
+	n = scandir(SYS_FS_DEVICES_DIR, &namelist, dir_filter, alphasort);
 
 	if (n == -1) {
 		ALOGE("Found zero sr_frs devices:%s", strerror(errno));
@@ -531,12 +540,12 @@ int main(int argc, char *argv[])
 	}
 
 	RFS_DBG("sr_frs sysfs name: %s", namelist[0]->d_name);
-	snprintf(DEV_NAME_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/dev_name", namelist[0]->d_name);
-	snprintf(SQ_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/sq_gpios", namelist[0]->d_name);
-	snprintf(PD_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/pd_gpios", namelist[0]->d_name);
-	snprintf(PTT_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/ptt_gpios", namelist[0]->d_name);
-	snprintf(HL_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/hl_gpios", namelist[0]->d_name);
-	snprintf(VOXDEC_SYSFS, W_SYSFS_SIZE, "/sys/devices/%s/voxdec_gpios", namelist[0]->d_name);
+	snprintf(DEV_NAME_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/dev_name", namelist[0]->d_name);
+	snprintf(SQ_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/sq_gpios", namelist[0]->d_name);
+	snprintf(PD_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/pd_gpios", namelist[0]->d_name);
+	snprintf(PTT_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/ptt_gpios", namelist[0]->d_name);
+	snprintf(HL_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/hl_gpios", namelist[0]->d_name);
+	snprintf(VOXDEC_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/voxdec_gpios", namelist[0]->d_name);
 
 	free(namelist[0]);
 	free(namelist);
