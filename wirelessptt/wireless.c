@@ -266,9 +266,30 @@ static int uart_config()
 	 * setting the default baud rate*/
 	cfmakeraw(&ti);
 
-	ti.c_cflag |= 1;
+	//can read
+	ti.c_cflag |= CREAD;
+	//not ocuppy
+	//ti.c_cflag |= CLOCAL;
+	//disable hardware flow ctrl
 	ti.c_cflag &= ~CRTSCTS;
 
+	//8 bit data
+	ti.c_cflag &= ~CSIZE;
+	ti.c_cflags |= CS8;
+	//no check
+	ti.c_cflag &= ~PARENB;
+	ti.c_iflag &= ~INPCK;
+	//1bit stop
+	ti.c_cflag &= ~CSTOPB;
+	//origin data output
+	ti.c_lflag  &= ~(ICANON | ECHO | ECHOE | ISIG);
+	ti.c_oflag &= ~OPOST;
+#if 0
+    //set wait time and min recved num
+    ti.c_cc[VTIME] = 1; /* read one char wait 1*(1/10)s */
+
+    ti.c_cc[VMIN] = 1; /* read at least one char */
+#endif
 	/* Set the attributes of UART after making
 	 * the above changes
 	 */
@@ -340,6 +361,36 @@ static int set_custom_baud_rate(int cust_baud_rate, unsigned char flow_ctrl)
 	return 0;
 }
 
+#if 0
+int uart_recv(char *rcv_buf,int data_len, int msec)
+{
+    int len,fs_sel;
+
+    fd_set fs_read;
+
+    struct timeval time;
+    FD_ZERO(&fs_read);
+
+    FD_SET(fd,&fs_read);
+
+    time.tv_sec = msec/1000;
+
+    time.tv_usec = (msec%1000)* 1000;
+
+    //use select
+    fs_sel = select(fd+1,&fs_read,NULL,NULL,&time);
+
+    if(fs_sel)
+	{
+		len = read(fd,data,data_len);
+		return len;
+	}
+    else
+	{
+		return 0;
+	}
+}
+#endif
 /*
  * Handling the Signals sent from the Kernel Init Manager.
  * After receiving the indication from rfkill subsystem, configure the
