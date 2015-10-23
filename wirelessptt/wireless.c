@@ -275,7 +275,7 @@ static int uart_config()
 
 	//8 bit data
 	ti.c_cflag &= ~CSIZE;
-	ti.c_cflags |= CS8;
+	ti.c_cflag |= CS8;
 	//no check
 	ti.c_cflag &= ~PARENB;
 	ti.c_iflag &= ~INPCK;
