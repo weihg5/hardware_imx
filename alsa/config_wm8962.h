@@ -30,9 +30,9 @@
 #define MIXER_WM8962_CAPTURE_SWITCH                 "Capture Switch"
 #define MIXER_WM8962_CAPTURE_VOLUME                 "Capture Volume"
 
-#define MIXER_WM8962_INPGAR_IN2L_SWITCH             "INPGAL IN2L Switch"
-#define MIXER_WM8962_MIXINL_IN2L_SWITCH             "MIXINL IN2L Switch"
-#define MIXER_WM8962_MIXINL_IN2L_VOLUME             "MIXINL IN2L Volume"
+#define MIXEL_WM8962_INPGAL_IN2L_SWITCH             "INPGAL IN2L Switch"
+#define MIXEL_WM8962_MIXINL_IN2L_SWITCH             "MIXINL IN2L Switch"
+#define MIXEL_WM8962_MIXINL_IN2L_VOLUME             "MIXINL IN2L Volume"
 
 #define MIXER_WM8962_INPGAR_IN3R_SWITCH             "INPGAR IN3R Switch"
 #define MIXER_WM8962_MIXINR_IN3R_SWITCH             "MIXINR IN3R Switch"
@@ -40,6 +40,9 @@
 
 #define MIXER_WM8962_MIXINR_PGA_SWITCH              "MIXINR PGA Switch"
 #define MIXER_WM8962_MIXINR_PGA_VOLUME              "MIXINR PGA Volume"
+
+#define MIXEL_WM8962_MIXINL_PGA_SWITCH              "MIXINL PGA Switch"
+#define MIXEL_WM8962_MIXINL_PGA_VOLUME              "MIXINL PGA Volume"
 
 #define MIXER_WM8962_DIGITAL_CAPTURE_VOLUME         "Digital Capture Volume"
 
@@ -159,12 +162,12 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
     },
 #else
 	{
-		.ctl_name = MIXER_WM8962_MIXINL_IN2L_SWITCH,
+		.ctl_name = MIXEL_WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 1,
 	},
 	{
-		.ctl_name = MIXER_WM8962_MIXINL_IN2L_VOLUME,
-		.intval = 7,
+		.ctl_name = MIXEL_WM8962_MIXINL_PGA_SWITCH,
+		.intval = 0,
 	},
 #endif
 #if 0 // WM8962_DEBUG
