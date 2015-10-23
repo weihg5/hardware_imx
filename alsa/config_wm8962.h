@@ -76,6 +76,18 @@ static struct route_setting speaker_output_wm8962[] = {
         .ctl_name = MIXER_WM8962_SPEAKER_VOLUME,
         .intval = 121,
     },
+    {
+        .ctl_name = "SPKOUTL PGA",
+        .strval = "DAC",
+    },
+    {
+        .ctl_name = "SPKOUTR PGA",
+        .strval = "Mixer",
+    },
+    {
+        .ctl_name = "Speaket Mixer Switch",
+        .intval = 0,
+    },
 #if WM8962_DEBUG
     {
         .ctl_name = MIXER_WM8962_HEADPHONE_SWITCH,

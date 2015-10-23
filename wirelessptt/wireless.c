@@ -594,17 +594,27 @@ static void set_audio_route(bool enable)
 	tinymix_command("MIXINR PGA Switch", "0");
 
 	if (enable) {
-		tinymix_command("HPOUTR PGA", "Mixer");
-		tinymix_command("HPMIXR MIXINR Switch", "1");
 		tinymix_command("MIXINR IN3R Switch", "1");
+
 		tinymix_command("Headphone Mixer Switch", "1");
+		tinymix_command("HPMIXR MIXINR Switch", "1");
+		tinymix_command("HPOUTR PGA", "Mixer");
 		tinymix_command("Headphone Volume", "121");
 		tinymix_command("Headphone Switch", "1");
+
+		tinymix_command("Speaket Mixer Switch", "1");
+		tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
+		tinymix_command("SPKOUTR PGA", "Mixer");
+		tinymix_command("Speaker Switch", "1");
+		tinymix_command("Speaker Volume", "121");
 	} else {
-		tinymix_command("HPOUTR PGA", "DAC");
 		tinymix_command("HPMIXR MIXINR Switch", "0");
 		tinymix_command("MIXINR IN3R Switch", "0");
 		tinymix_command("Headphone Mixer Switch", "0");
+
+		tinymix_command("Speaket Mixer Switch", "0");
+		tinymix_command("SPKOUTR Mixer MIXINR Switch", "0");
+		tinymix_command("SPKOUTR PGA", "Mixer");
 		// tinymix_command("Headphone Volume", "0");
 		// tinymix_command("Headphone Switch", "0");
 	}
