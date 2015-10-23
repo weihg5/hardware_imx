@@ -75,6 +75,8 @@ static void set_sleep(char *);
 int dev_fd = -1;
 typedef void (*modefunc)(char *);
 
+typedef enum { false = 0, true, } bool;
+
 struct mode_func{
 	char *cmd;
 	modefunc func;
@@ -509,6 +511,54 @@ void process_commands(void)
 		process_cmd(args);
 	}	
 }
+
+static bool system_format(const char *command, ...)
+{
+	va_list ap;
+	char buff[1024];
+
+	va_start(ap, command);
+	vsnprintf(buff, sizeof(buff), command, ap);
+	va_end(ap);
+
+	command = buff;
+
+	RFS_INFO("run command: %s", command);
+
+	if (system(command)) {
+		RFS_ERR("Failed to run command: %s", command);
+		return false;
+	}
+
+	return true;
+}
+
+static bool tinymix_command(const char *control, const char *value)
+{
+	return system_format("/system/bin/tinymix '%s' '%s'", control, value);
+}
+
+static void set_audio_route(bool enable)
+{
+	tinymix_command("MIXINR PGA Switch", "0");
+
+	if (enable) {
+		tinymix_command("HPOUTR PGA", "Mixer");
+		tinymix_command("HPMIXR MIXINR Switch", "1");
+		tinymix_command("MIXINR IN3R Switch", "1");
+		tinymix_command("Headphone Mixer Switch", "1");
+		tinymix_command("Headphone Volume", "121");
+		tinymix_command("Headphone Switch", "1");
+	} else {
+		tinymix_command("HPOUTR PGA", "DAC");
+		tinymix_command("HPMIXR MIXINR Switch", "0");
+		tinymix_command("MIXINR IN3R Switch", "0");
+		tinymix_command("Headphone Mixer Switch", "0");
+		// tinymix_command("Headphone Volume", "0");
+		// tinymix_command("Headphone Switch", "0");
+	}
+}
+
 /*****************************************************************************/
 #define SYS_FS_DEVICES_DIR "/sys/bus/platform/devices"
 
@@ -591,9 +641,15 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 #endif	
+
+	set_audio_route(true);
+
 	while(!g_exit){
 		process_commands();
 	}
+
+	set_audio_route(false);
+
 	cleanup(1);
 
 	return 0;
