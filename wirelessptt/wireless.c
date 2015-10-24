@@ -596,25 +596,28 @@ static void set_audio_route(bool enable)
 	if (enable) {
 		tinymix_command("MIXINR IN3R Switch", "1");
 
+		tinymix_command("HPMIXL MIXINR Switch", "1");
+		tinymix_command("HPOUTL PGA", "Mixer");
 		tinymix_command("Headphone Mixer Switch", "1");
-		tinymix_command("HPMIXR MIXINR Switch", "1");
-		tinymix_command("HPOUTR PGA", "Mixer");
 		tinymix_command("Headphone Volume", "121");
 		tinymix_command("Headphone Switch", "1");
 
+		tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
+		tinymix_command("SPKOUTL PGA", "Mixer");
 		tinymix_command("Speaket Mixer Switch", "1");
-		tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
-		tinymix_command("SPKOUTR PGA", "Mixer");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
 	} else {
-		tinymix_command("HPMIXR MIXINR Switch", "0");
 		tinymix_command("MIXINR IN3R Switch", "0");
+
 		tinymix_command("Headphone Mixer Switch", "0");
+		tinymix_command("Headphone Mixer Switch", "0");
+		tinymix_command("HPMIXL MIXINR Switch", "0");
+		tinymix_command("HPOUTL PGA", "DAC");
 
 		tinymix_command("Speaket Mixer Switch", "0");
-		tinymix_command("SPKOUTR Mixer MIXINR Switch", "0");
-		tinymix_command("SPKOUTR PGA", "Mixer");
+		tinymix_command("SPKOUTL Mixer MIXINR Switch", "0");
+		tinymix_command("SPKOUTL PGA", "DAC");
 		// tinymix_command("Headphone Volume", "0");
 		// tinymix_command("Headphone Switch", "0");
 	}
@@ -625,6 +628,7 @@ static void set_audio_route(bool enable)
 
 int main(int argc, char *argv[])
 {
+	int audio_fd;
 #ifdef _ANDROID
 	int err;
 	struct stat file_stat;
@@ -705,9 +709,16 @@ int main(int argc, char *argv[])
 
 	set_audio_route(true);
 
+	audio_fd = open("/dev/snd/pcmC0D0c", O_RDWR);
+	if (audio_fd < 0) {
+		RFS_ERR("Failed to open audio device");
+	}
+
 	while(!g_exit){
 		process_commands();
 	}
+
+	close(audio_fd);
 
 	set_audio_route(false);
 
