@@ -39,6 +39,7 @@
 
 #include <dirent.h>
 
+#define RFS_DEBUG	1
 
 #define W_SYSFS_SIZE 256
 
@@ -592,30 +593,45 @@ static bool tinymix_command(const char *control, const char *value)
 static void set_audio_route(bool enable)
 {
 	tinymix_command("MIXINR PGA Switch", "0");
+#if RFS_DEBUG
+	tinymix_command("MIXINL PGA Switch", "0");
+#endif
 
 	if (enable) {
 		tinymix_command("MIXINR IN3R Switch", "1");
+#if RFS_DEBUG
+		tinymix_command("MIXINL IN2L Switch", "1");
+#endif
 
 		tinymix_command("HPMIXL MIXINR Switch", "1");
+#if RFS_DEBUG
+		tinymix_command("HPMIXL MIXINL Switch", "1");
+#endif
 		tinymix_command("HPOUTL PGA", "Mixer");
 		tinymix_command("Headphone Mixer Switch", "1");
 		tinymix_command("Headphone Volume", "121");
 		tinymix_command("Headphone Switch", "1");
 
 		tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
+#if RFS_DEBUG
+		tinymix_command("SPKOUTL Mixer MIXINL Switch", "1");
+#endif
 		tinymix_command("SPKOUTL PGA", "Mixer");
-		tinymix_command("Speaket Mixer Switch", "1");
+		tinymix_command("Speaker Mixer Switch", "1");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
 	} else {
 		tinymix_command("MIXINR IN3R Switch", "0");
+#if RFS_DEBUG
+		tinymix_command("MIXINL IN2L Switch", "0");
+#endif
 
 		tinymix_command("Headphone Mixer Switch", "0");
 		tinymix_command("Headphone Mixer Switch", "0");
 		tinymix_command("HPMIXL MIXINR Switch", "0");
 		tinymix_command("HPOUTL PGA", "DAC");
 
-		tinymix_command("Speaket Mixer Switch", "0");
+		tinymix_command("Speaker Mixer Switch", "0");
 		tinymix_command("SPKOUTL Mixer MIXINR Switch", "0");
 		tinymix_command("SPKOUTL PGA", "DAC");
 		// tinymix_command("Headphone Volume", "0");
@@ -628,7 +644,6 @@ static void set_audio_route(bool enable)
 
 int main(int argc, char *argv[])
 {
-	int audio_fd;
 #ifdef _ANDROID
 	int err;
 	struct stat file_stat;
@@ -709,16 +724,9 @@ int main(int argc, char *argv[])
 
 	set_audio_route(true);
 
-	audio_fd = open("/dev/snd/pcmC0D0c", O_RDWR);
-	if (audio_fd < 0) {
-		RFS_ERR("Failed to open audio device");
-	}
-
 	while(!g_exit){
 		process_commands();
 	}
-
-	close(audio_fd);
 
 	set_audio_route(false);
 
