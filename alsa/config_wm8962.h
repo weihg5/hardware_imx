@@ -85,7 +85,7 @@ static struct route_setting speaker_output_wm8962[] = {
         .strval = "Mixer",
     },
     {
-        .ctl_name = "Speaket Mixer Switch",
+        .ctl_name = "Speaker Mixer Switch",
         .intval = 0,
     },
 #if WM8962_DEBUG
