@@ -270,7 +270,7 @@ static int uart_config()
 	//can read
 	ti.c_cflag |= CREAD;
 	//not ocuppy
-	//ti.c_cflag |= CLOCAL;
+	ti.c_cflag |= CLOCAL;
 	//disable hardware flow ctrl
 	ti.c_cflag &= ~CRTSCTS;
 
@@ -279,7 +279,7 @@ static int uart_config()
 	ti.c_cflag |= CS8;
 	//no check
 	ti.c_cflag &= ~PARENB;
-	ti.c_iflag &= ~INPCK;
+	//ti.c_iflag &= ~INPCK;
 	//1bit stop
 	ti.c_cflag &= ~CSTOPB;
 	//origin data output
@@ -479,14 +479,19 @@ void send_cmd_wait_ack(char *buf)
 {
 	int ret ;
 	char rbuf[128];
+	char sbuf[128];
 	int recv_num = 0;
 	memset(rbuf, 0, 128);
-
-	ret = write(dev_fd, buf, strlen(buf));
-	if (ret < (int)strlen(buf)){
+	memset(sbuf, 0, 128);
+	memcpy(sbuf, buf, strlen(buf));
+	sbuf[strlen(buf)] = 0xd;
+	sbuf[strlen(buf)+1] = 0xa;
+	RFS_ERR("len=%d--%d, %s, , cr=0x%x\n", strlen(buf), strlen(sbuf), sbuf, sbuf[strlen(buf)]);
+	ret = write(dev_fd, sbuf, strlen(sbuf));
+	if (ret != (int)strlen(sbuf)){
 		RFS_ERR("tty send failt, ret=%d\n", ret);
 		return;
-	}	
+	}
 	msleep(1000);
 	do {
 		ret = read(dev_fd, rbuf+recv_num, 1);
@@ -652,6 +657,7 @@ int main(int argc, char *argv[])
 	struct dirent **namelist;
 
 	RFS_START_FUNC();
+	RFS_INFO("buildtime is %s-%s\n", __DATE__, __TIME__);
 	err = 0;
 
 	n = scandir(SYS_FS_DEVICES_DIR, &namelist, dir_filter, alphasort);
