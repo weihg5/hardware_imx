@@ -71,6 +71,7 @@ using namespace android;
 
 #define UVC_SENSOR_NAME "uvc"
 #define OV5640MIPI_SENSOR_NAME "ov5640_mipi"
+#define OV5645MIPI_SENSOR_NAME "ov5645_mipi"
 #define OV5642CSI_SENSOR_NAME "ov5642_camera"
 #define OV5640CSI_SENSOR_NAME "ov5640_camera"
 #define ADV7180_TVIN_NAME "adv7180_decoder"

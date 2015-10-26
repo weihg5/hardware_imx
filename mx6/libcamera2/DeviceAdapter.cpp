@@ -18,6 +18,7 @@
 #include "UvcDevice.h"
 #include "UvcMJPGDevice.h"
 #include "Ov5640Mipi.h"
+#include "Ov5645Mipi.h"
 #include "Ov5642Csi.h"
 #include "Ov5640Csi.h"
 #include "TVINDevice.h"
@@ -52,6 +53,10 @@ sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
     else if (strstr(info.name, OV5640MIPI_SENSOR_NAME)) {
         FLOGI("DeviceAdapter: Create ov5640 mipi device");
         devAdapter = new Ov5640Mipi();
+    }
+    else if (strstr(info.name, OV5645MIPI_SENSOR_NAME)) {
+        FLOGI("DeviceAdapter: Create ov5645 mipi device");
+        devAdapter = new Ov5645Mipi();
     }
     else if (strstr(info.name, OV5642CSI_SENSOR_NAME)) {
         FLOGI("DeviceAdapter: Create ov5642 csi device");

@@ -33,6 +33,7 @@ LOCAL_SRC_FILES:=    \
     messageQueue.cpp \
     OvDevice.cpp \
     Ov5640Mipi.cpp \
+    Ov5645Mipi.cpp \
     Ov5642Csi.cpp \
     Ov5640Csi.cpp \
     TVINDevice.cpp \
