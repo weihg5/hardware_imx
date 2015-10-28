@@ -87,7 +87,7 @@ int convertPixelFormatToV4L2Format(PixelFormat format)
             break;
     }
     FLOGI("pixel format: 0x%x", nFormat);
-    return nFormat;
+    return  nFormat;
 }
 
 PixelFormat convertV4L2FormatToPixelFormat(unsigned int format)
@@ -201,6 +201,42 @@ int registerCameraBuffers(StreamBuffer *pBuffer,
     return ret;
 }
 
+int getCaptureMode(int width, int height)
+{
+    int capturemode = 0;
+
+    if ((width == 640) && (height == 480)) {
+        capturemode = 0;
+    }
+    else if ((width == 320) && (height == 240)) {
+        capturemode = 1;
+    }
+    else if ((width == 720) && (height == 480)) {
+        capturemode = 2;
+    }
+    else if ((width == 720) && (height == 576)) {
+        capturemode = 3;
+    }
+    else if ((width == 1280) && (height == 720)) {
+        capturemode = 4;
+    }
+    else if ((width == 1920) && (height == 1080)) {
+        capturemode = 5;
+    }
+    else if ((width == 2592) && (height == 1944)) {
+        capturemode = 6;
+    }
+    else if ((width == 176) && (height == 144)) {
+        capturemode = 7;
+    }
+    else if ((width == 1024) && (height == 768)) {
+        capturemode = 8;
+    }
+    else {
+        FLOGE("width:%d height:%d is not supported.", width, height);
+    }
+    return capturemode;
+}
 
 int setDeviceConfig(int         width,
                                         int         height,
@@ -217,7 +253,7 @@ int setDeviceConfig(int         width,
     }
 
     status_t ret = NO_ERROR;
-    int input    = 1;
+    int input    = 0;
     ret = ioctl(mCamFd, VIDIOC_S_INPUT, &input);
     if (ret < 0) {
         FLOGE("Open: VIDIOC_S_INPUT Failed: %s", strerror(errno));
@@ -243,7 +279,7 @@ int setDeviceConfig(int         width,
     param.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.parm.capture.timeperframe.numerator   = 1;
     param.parm.capture.timeperframe.denominator = fps;
-    param.parm.capture.capturemode = 0;//getCaptureMode(width, height);
+    param.parm.capture.capturemode = getCaptureMode(width, height);
     ret = ioctl(mCamFd, VIDIOC_S_PARM, &param);
     if (ret < 0) {
         FLOGE("Open: VIDIOC_S_PARM Failed: %s", strerror(errno));
