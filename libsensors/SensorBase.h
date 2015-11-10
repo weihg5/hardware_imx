@@ -65,6 +65,15 @@ public:
     virtual void processEvent(int code, int value) = 0;
 	virtual int batch(int handle, int flags, int64_t period_ns, int64_t timeout);
 	virtual int flush(int handle);
+
+	int fileWriteData(const char *filename, const void *buff, size_t size);
+	int fileReadData(const char *filename, void *buff, size_t size);
+	int fileWriteInt(const char *filename, int value);
+	int fileReadInt(const char *filename, int *value);
+	int fileReadInt(const char *filename, int defValue);
+	int fileWriteBool(const char *filename, bool value);
+	int fileReadBool(const char *filename, bool *value);
+	bool fileReadBool(const char *filename, bool defValue);
 };
 
 /*****************************************************************************/

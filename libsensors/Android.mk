@@ -29,6 +29,7 @@ LOCAL_SRC_FILES := 						\
 				sensors.cpp 			\
 				SensorBase.cpp			\
 				LightSensor.cpp			\
+				ProximitySensor.cpp		\
 				AccelSensor.cpp			\
 				MagSensor.cpp			\
 				PressSensor.cpp			\

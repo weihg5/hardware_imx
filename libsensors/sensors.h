@@ -70,6 +70,7 @@ __BEGIN_DECLS
 #define EVENT_TYPE_MAGV_Z           ABS_Z
 
 #define EVENT_TYPE_LIGHT            ABS_MISC
+#define EVENT_TYPE_PROXIMITY        ABS_DISTANCE
 
 #define EVENT_TYPE_PRESSURE	        ABS_PRESSURE
 

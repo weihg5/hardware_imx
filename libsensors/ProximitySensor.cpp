@@ -26,27 +26,27 @@
 #include <cutils/log.h>
 #include <cutils/properties.h>
 
-#include "LightSensor.h"
+#include "ProximitySensor.h"
 
 #define SYSFS_ROOT		"/sys/bus/i2c/devices/2-0044/"
-#define FILE_ENABLE		SYSFS_ROOT "alsir_en"
-#define FILE_LUX		SYSFS_ROOT "lux"
-#define FILE_INT_LT		SYSFS_ROOT "int_lt_lux"
-#define FILE_INT_HT		SYSFS_ROOT "int_ht_lux"
+#define FILE_ENABLE		SYSFS_ROOT "prox_en"
+#define FILE_PROX		SYSFS_ROOT "prox"
+#define FILE_INT_LT		SYSFS_ROOT "int_lt_prox"
+#define FILE_INT_HT		SYSFS_ROOT "int_ht_prox"
 
 /*****************************************************************************/
-LightSensor::LightSensor()
+ProximitySensor::ProximitySensor()
     : SensorBase(NULL, "isl29044 light and proximity sensor"),
       mEnabled(0),
       mInputReader(4),
-      mHasPendingEvent(false),
-      mThresholdLux(10)
+	  mHasPendingEvent(false),
+	  mThresholdProx(1)
 {
     char  buffer[PROPERTY_VALUE_MAX];
 
     mPendingEvent.version = sizeof(sensors_event_t);
-    mPendingEvent.sensor = ID_L;
-    mPendingEvent.type = SENSOR_TYPE_LIGHT;
+    mPendingEvent.sensor = ID_P;
+    mPendingEvent.type = SENSOR_TYPE_PROXIMITY;
     memset(mPendingEvent.data, 0, sizeof(mPendingEvent.data));
 
     if (data_fd >= 0) {
@@ -54,63 +54,66 @@ LightSensor::LightSensor()
     }
 }
 
-LightSensor::~LightSensor() {
+ProximitySensor::~ProximitySensor() {
     if (mEnabled) {
         enable(0, 0);
     }
 }
 
-int LightSensor::setDelay(int32_t handle, int64_t ns)
+int ProximitySensor::setDelay(int32_t handle, int64_t ns)
 {
     //dummy due to not support in driver....
     return 0;
 }
 
-int LightSensor::enable(int32_t handle, int en)
+int ProximitySensor::enable(int32_t handle, int en)
 {
-    int ret;
+	int ret;
     bool enable = (en != 0);
 
-	if (enable == mEnabled) {
+    if (enable == mEnabled) {
 		return 0;
-	}
+    }
 
 	ret = fileWriteBool(FILE_ENABLE, enable);
 	if (ret < 0) {
 		return ret;
 	}
 
-    mPreviousLight = -1;
+	updateThreshold();
+
 	mEnabled = enable;
-	setIntLux();
+    mPreviousProximity = -1;
 
     return 0;
 }
 
-int LightSensor::setIntLux()
-{
-	int ret;
-    int lux, lux_ht, lux_lt;
-
-	ret = fileReadInt(FILE_LUX, &lux);
-	if (ret < 0) {
-		return ret;
-	}
-
-	lux_ht = lux + mThresholdLux;
-	lux_lt = lux - mThresholdLux;
-	if (lux_lt < 0) {
-		lux_lt = 0;
-	}
-
-    return fileWriteInt(FILE_INT_HT, lux_ht) | fileWriteInt(FILE_INT_LT, lux_lt);
-}
-bool LightSensor::hasPendingEvents() const
+bool ProximitySensor::hasPendingEvents() const
 {
     return mHasPendingEvent;
 }
 
-int LightSensor::readEvents(sensors_event_t* data, int count)
+int ProximitySensor::updateThreshold(void)
+{
+	int fd;
+	int ret;
+	int prox, prox_ht, prox_lt;
+
+	ret = fileReadInt(FILE_PROX, &prox);
+	if (ret < 0) {
+		return ret;
+	}
+
+	prox_ht = prox + mThresholdProx;
+	prox_lt = prox - mThresholdProx;
+	if (prox_lt < 0) {
+		prox_lt = 0;
+	}
+
+	return fileWriteInt(FILE_INT_HT, prox_ht) | fileWriteInt(FILE_INT_LT, prox_lt);
+}
+
+int ProximitySensor::readEvents(sensors_event_t* data, int count)
 {
     if (count < 1)
         return -EINVAL;
@@ -132,20 +135,20 @@ int LightSensor::readEvents(sensors_event_t* data, int count)
     while (count && mInputReader.readEvent(&event)) {
         int type = event->type;
         if (type == EV_ABS) {
-            if (event->code == EVENT_TYPE_LIGHT) {
-                mPendingEvent.light = event->value;
-                setIntLux();
+            if (event->code == EVENT_TYPE_PROXIMITY) {
+                mPendingEvent.distance = event->value;
+				updateThreshold();
             }
         } else if (type == EV_SYN) {
             mPendingEvent.timestamp = timevalToNano(event->time);
-            if (mEnabled && (mPendingEvent.light != mPreviousLight)) {
+            if (mEnabled && (mPendingEvent.distance != mPreviousProximity)) {
                 *data++ = mPendingEvent;
                 count--;
                 numEventReceived++;
-                mPreviousLight = mPendingEvent.light;
+                mPreviousProximity = mPendingEvent.distance;
             }
         } else {
-            ALOGE("LightSensor: unknown event (type=%d, code=%d)",
+            ALOGE("ProximitySensor: unknown event (type=%d, code=%d)",
                     type, event->code);
         }
         mInputReader.next();
@@ -154,6 +157,6 @@ int LightSensor::readEvents(sensors_event_t* data, int count)
     return numEventReceived;
 }
 
-void LightSensor::processEvent(int code, int value)
+void ProximitySensor::processEvent(int code, int value)
 {
 }

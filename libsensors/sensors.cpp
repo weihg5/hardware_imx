@@ -37,6 +37,7 @@
 #include "MagSensor.h"
 #include "PressSensor.h"
 #include "LightSensor.h"
+#include "ProximitySensor.h"
 
 
 /*****************************************************************************/
@@ -79,10 +80,14 @@ static const struct sensor_t sSensorList[] = {
           "Freescale Semiconductor Inc.",
           1, SENSORS_ORIENTATION_HANDLE,
           SENSOR_TYPE_ORIENTATION, 360.0f, CONVERT_O, 0.50f, 100000, 0, 0, { } },
-        { "ISL29023 Light sensor",
+        { "ISL29044 Light sensor",
           "Intersil",
           1, SENSORS_LIGHT_HANDLE,
-          SENSOR_TYPE_LIGHT, 16000.0f, 1.0f, 0.35f, 0, 0, 0, { } },
+          SENSOR_TYPE_LIGHT, 3200.0f, 1.0f, 0.35f, 0, 0, 0, { } },
+		{ "ISL29044 Proximity sensor",
+		  "Intersil",
+		  1, SENSORS_PROXIMITY_HANDLE,
+		  SENSOR_TYPE_PROXIMITY, 255.0f, 1.0f, 0.35f, 0, 0, 0, { } },
 };
 
 
@@ -136,6 +141,7 @@ private:
         accel           = 0,
         mag 		    = 1,
         light			= 2,
+		proximity		= 3,
         numSensorDrivers,
         numFds,
     };
@@ -154,6 +160,8 @@ private:
             	return mag;
 			case ID_L:
 				return light;
+			case ID_PX:
+				return proximity;
         }
         return -EINVAL;
     }
@@ -175,6 +183,7 @@ sensors_poll_context_t::sensors_poll_context_t()
     mSensors[accel] = new AccelSensor();
 	mSensors[mag] = new MagSensor();
 	mSensors[light] = new LightSensor();
+	mSensors[proximity] = new ProximitySensor();
 	fillPollFd();
 	magRunTimes = 0;
     int wakeFds[2];

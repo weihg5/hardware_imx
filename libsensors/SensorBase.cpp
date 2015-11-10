@@ -203,4 +203,111 @@ int SensorBase::flush(int handle){
 	
 }
 
+int SensorBase::fileWriteData(const char *filename, const void *buff, size_t size)
+{
+	int fd;
+	int ret;
 
+	fd = open(filename, O_WRONLY);
+	if (fd < 0) {
+		ALOGE("Failed to open file %s: %s", filename, strerror(errno));
+		return fd;
+	}
+
+	ret = write(fd, buff, size);
+	close(fd);
+
+	return ret;
+}
+
+int SensorBase::fileReadData(const char *filename, void *buff, size_t size)
+{
+	int fd;
+	int ret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		ALOGE("Failed to open file %s: %s", filename, strerror(errno));
+		return fd;
+	}
+
+	ret = read(fd, buff, size);
+	close(fd);
+
+	return ret;
+}
+
+int SensorBase::fileWriteInt(const char *filename, int value)
+{
+	char buff[1024];
+	int wrlen = snprintf(buff, sizeof(buff), "%d", value);
+
+	return fileWriteData(filename, buff, wrlen);
+}
+
+int SensorBase::fileReadInt(const char *filename, int *value)
+{
+	int rdlen;
+	char buff[1024];
+
+	rdlen = fileReadData(filename, buff, sizeof(buff));
+	if (rdlen < 0) {
+		return rdlen;
+	}
+
+	buff[rdlen] = 0;
+
+	if (value) {
+		*value = atoi(buff);
+	}
+
+	return 0;
+}
+
+int SensorBase::fileReadInt(const char *filename, int defValue)
+{
+	int ret;
+	int value;
+
+	ret = fileReadInt(filename, &value);
+	if (ret < 0) {
+		return defValue;
+	}
+
+	return value;
+}
+
+int SensorBase::fileWriteBool(const char *filename, bool value)
+{
+	return fileWriteData(filename, value ? "1" : "0", 1);
+}
+
+int SensorBase::fileReadBool(const char *filename, bool *value)
+{
+	int ret;
+	int nValue;
+
+	ret = fileReadInt(filename, &nValue);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if (value) {
+		*value = (nValue != 0);
+	}
+
+	return 0;
+}
+
+bool SensorBase::fileReadBool(const char *filename, bool defValue)
+{
+	int ret;
+	bool value;
+
+	ret = fileReadBool(filename, &value);
+	if (ret < 0) {
+		return defValue;
+	}
+
+	return value;
+}
