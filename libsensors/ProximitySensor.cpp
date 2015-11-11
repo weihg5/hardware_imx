@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Sensors"
+
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
@@ -39,38 +41,38 @@ ProximitySensor::ProximitySensor()
     : SensorBase(NULL, "isl29044 light and proximity sensor"),
       mEnabled(0),
       mInputReader(4),
-	  mHasPendingEvent(false),
-	  mThresholdProx(1)
+	  mHasPendingEvent(false)
 {
-    char  buffer[PROPERTY_VALUE_MAX];
+	pr_pos_info();
+
+	mEnabled = fileReadBool(FILE_ENABLE, false);
 
     mPendingEvent.version = sizeof(sensors_event_t);
     mPendingEvent.sensor = ID_P;
     mPendingEvent.type = SENSOR_TYPE_PROXIMITY;
     memset(mPendingEvent.data, 0, sizeof(mPendingEvent.data));
-
-    if (data_fd >= 0) {
-        enable(0, 1);
-    }
 }
 
 ProximitySensor::~ProximitySensor() {
     if (mEnabled) {
-        enable(0, 0);
+        setEnable(0, 0);
     }
 }
 
 int ProximitySensor::setDelay(int32_t handle, int64_t ns)
 {
-    //dummy due to not support in driver....
+	pr_pos_info();
+
     return 0;
 }
 
-int ProximitySensor::enable(int32_t handle, int en)
+int ProximitySensor::setEnable(int32_t handle, int enable)
 {
 	int ret;
-    bool enable = (en != 0);
 
+	pr_func_info("handle = %d, enable = %d", handle, enable);
+
+	enable = !!enable;
     if (enable == mEnabled) {
 		return 0;
     }
@@ -79,8 +81,6 @@ int ProximitySensor::enable(int32_t handle, int en)
 	if (ret < 0) {
 		return ret;
 	}
-
-	updateThreshold();
 
 	mEnabled = enable;
     mPreviousProximity = -1;
@@ -91,26 +91,6 @@ int ProximitySensor::enable(int32_t handle, int en)
 bool ProximitySensor::hasPendingEvents() const
 {
     return mHasPendingEvent;
-}
-
-int ProximitySensor::updateThreshold(void)
-{
-	int fd;
-	int ret;
-	int prox, prox_ht, prox_lt;
-
-	ret = fileReadInt(FILE_PROX, &prox);
-	if (ret < 0) {
-		return ret;
-	}
-
-	prox_ht = prox + mThresholdProx;
-	prox_lt = prox - mThresholdProx;
-	if (prox_lt < 0) {
-		prox_lt = 0;
-	}
-
-	return fileWriteInt(FILE_INT_HT, prox_ht) | fileWriteInt(FILE_INT_LT, prox_lt);
 }
 
 int ProximitySensor::readEvents(sensors_event_t* data, int count)
@@ -137,7 +117,6 @@ int ProximitySensor::readEvents(sensors_event_t* data, int count)
         if (type == EV_ABS) {
             if (event->code == EVENT_TYPE_PROXIMITY) {
                 mPendingEvent.distance = event->value;
-				updateThreshold();
             }
         } else if (type == EV_SYN) {
             mPendingEvent.timestamp = timevalToNano(event->time);
@@ -159,4 +138,5 @@ int ProximitySensor::readEvents(sensors_event_t* data, int count)
 
 void ProximitySensor::processEvent(int code, int value)
 {
+	pr_pos_info();
 }

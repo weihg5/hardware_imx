@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Sensors"
+
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
@@ -208,6 +210,8 @@ int SensorBase::fileWriteData(const char *filename, const void *buff, size_t siz
 	int fd;
 	int ret;
 
+	pr_func_info("filename = %s", filename);
+
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
 		ALOGE("Failed to open file %s: %s", filename, strerror(errno));
@@ -215,6 +219,11 @@ int SensorBase::fileWriteData(const char *filename, const void *buff, size_t siz
 	}
 
 	ret = write(fd, buff, size);
+	if (ret < 0) {
+		ALOGE("Failed to write file %s: %s", filename, strerror(errno));
+		return ret;
+	}
+
 	close(fd);
 
 	return ret;
@@ -225,6 +234,8 @@ int SensorBase::fileReadData(const char *filename, void *buff, size_t size)
 	int fd;
 	int ret;
 
+	pr_func_info("filename = %s", filename);
+
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
 		ALOGE("Failed to open file %s: %s", filename, strerror(errno));
@@ -232,6 +243,11 @@ int SensorBase::fileReadData(const char *filename, void *buff, size_t size)
 	}
 
 	ret = read(fd, buff, size);
+	if (ret < 0) {
+		ALOGE("Failed to read file %s: %s", filename, strerror(errno));
+		return ret;
+	}
+
 	close(fd);
 
 	return ret;

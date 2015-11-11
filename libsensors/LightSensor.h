@@ -38,8 +38,6 @@ class LightSensor : public SensorBase {
     InputEventCircularReader mInputReader;
     sensors_event_t mPendingEvent;
     bool mHasPendingEvent;
-    char ls_sysfs_path[PATH_MAX];
-    int ls_sysfs_path_len;
     float mPreviousLight;
 
 public:
@@ -48,12 +46,11 @@ public:
     virtual int readEvents(sensors_event_t* data, int count);
     virtual bool hasPendingEvents() const;
     virtual int setDelay(int32_t handle, int64_t ns);
-    virtual int enable(int32_t handle, int enabled);
+    virtual int setEnable(int32_t handle, int enabled);
+    virtual int getEnable(int32_t handle) {
+		return mEnabled;
+	}
     virtual void processEvent(int code, int value);
-
-private:
-    int mThresholdLux;
-    int setIntLux();
 };
 
 /*****************************************************************************/

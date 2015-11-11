@@ -27,6 +27,12 @@
 
 #define SENSORS_MAX  20
 
+#define pr_pos_info() \
+	ALOGE("%s[%d]", __FUNCTION__, __LINE__)
+
+#define pr_func_info(fmt, args ...) \
+	ALOGE("%s[%d]: " fmt, __FUNCTION__, __LINE__, ##args)
+
 /*****************************************************************************/
 class SensorBase {
 protected:

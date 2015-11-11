@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Sensors"
+
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
@@ -37,40 +39,41 @@
 /*****************************************************************************/
 LightSensor::LightSensor()
     : SensorBase(NULL, "isl29044 light and proximity sensor"),
-      mEnabled(0),
       mInputReader(4),
-      mHasPendingEvent(false),
-      mThresholdLux(10)
+      mHasPendingEvent(false)
 {
     char  buffer[PROPERTY_VALUE_MAX];
+
+	pr_pos_info();
+
+	mEnabled = fileReadBool(FILE_ENABLE, false);
 
     mPendingEvent.version = sizeof(sensors_event_t);
     mPendingEvent.sensor = ID_L;
     mPendingEvent.type = SENSOR_TYPE_LIGHT;
     memset(mPendingEvent.data, 0, sizeof(mPendingEvent.data));
-
-    if (data_fd >= 0) {
-        enable(0, 1);
-    }
 }
 
 LightSensor::~LightSensor() {
     if (mEnabled) {
-        enable(0, 0);
+        setEnable(0, 0);
     }
 }
 
 int LightSensor::setDelay(int32_t handle, int64_t ns)
 {
-    //dummy due to not support in driver....
+	pr_pos_info();
+
     return 0;
 }
 
-int LightSensor::enable(int32_t handle, int en)
+int LightSensor::setEnable(int32_t handle, int enable)
 {
     int ret;
-    bool enable = (en != 0);
 
+	pr_func_info("handle = %d, enable = %d", handle, enable);
+
+	enable = !!enable;
 	if (enable == mEnabled) {
 		return 0;
 	}
@@ -82,29 +85,10 @@ int LightSensor::enable(int32_t handle, int en)
 
     mPreviousLight = -1;
 	mEnabled = enable;
-	setIntLux();
 
     return 0;
 }
 
-int LightSensor::setIntLux()
-{
-	int ret;
-    int lux, lux_ht, lux_lt;
-
-	ret = fileReadInt(FILE_LUX, &lux);
-	if (ret < 0) {
-		return ret;
-	}
-
-	lux_ht = lux + mThresholdLux;
-	lux_lt = lux - mThresholdLux;
-	if (lux_lt < 0) {
-		lux_lt = 0;
-	}
-
-    return fileWriteInt(FILE_INT_HT, lux_ht) | fileWriteInt(FILE_INT_LT, lux_lt);
-}
 bool LightSensor::hasPendingEvents() const
 {
     return mHasPendingEvent;
@@ -134,7 +118,6 @@ int LightSensor::readEvents(sensors_event_t* data, int count)
         if (type == EV_ABS) {
             if (event->code == EVENT_TYPE_LIGHT) {
                 mPendingEvent.light = event->value;
-                setIntLux();
             }
         } else if (type == EV_SYN) {
             mPendingEvent.timestamp = timevalToNano(event->time);
@@ -156,4 +139,5 @@ int LightSensor::readEvents(sensors_event_t* data, int count)
 
 void LightSensor::processEvent(int code, int value)
 {
+	pr_pos_info();
 }
