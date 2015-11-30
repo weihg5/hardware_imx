@@ -163,3 +163,11 @@ LOCAL_MODULE := ca-cert-google.pem
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_TAGS := eng
 include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := ../u-center_GPS_1.05.apk
+LOCAL_MODULE := u-center_GPS_1.05.apk
+LOCAL_MODULE_CLASS := VENDOR_APPS
+LOCAL_MODULE_TAGS := eng
+include $(BUILD_PREBUILT)
+
