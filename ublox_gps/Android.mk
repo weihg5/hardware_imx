@@ -24,5 +24,6 @@
 # $Id: Android.mk 83778 2014-08-07 13:43:17Z fabio.robbiani $
 # $HeadURL: http://svn.u-blox.ch/GPS/SOFTWARE/hmw/android/release/release_v3.10/gps/Android.mk $
 ###############################################################################
-
+ifeq ($(USE_UBLOX_GPS_HARDWARE),true)
 include $(all-subdir-makefiles)
+endif
