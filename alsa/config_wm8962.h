@@ -23,6 +23,11 @@
 #define WM8962_DEBUG	1
 
 #define MIXER_WM8962_AUDIO_MODE                     "AudioMode"
+#define MIXER_WM8962_AUDIO_MODE_MUSIC               "MasterMusic"
+#define MIXER_WM8962_AUDIO_MODE_CALL                "SlaveCall"
+#define MIXER_WM8962_AUDIO_MODE_BT_MUSIC            "BtSlaveMusic"
+#define MIXER_WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
+
 #define MIXER_WM8962_SPEAKER_VOLUME                 "Speaker Volume"
 #define MIXER_WM8962_SPEAKER_SWITCH                 "Speaker Switch"
 #define MIXER_WM8962_HEADPHONE_VOLUME               "Headphone Volume"
@@ -53,6 +58,10 @@
 /* These are values that never change */
 static struct route_setting defaults_wm8962[] = {
     /* general */
+	{
+		.ctl_name = MIXER_WM8962_AUDIO_MODE,
+		.strval = MIXER_WM8962_AUDIO_MODE_MUSIC,
+	},
     {
         .ctl_name = MIXER_WM8962_DIGITAL_PLAYBACK_VOLUME,
         .intval = 96,
@@ -63,6 +72,10 @@ static struct route_setting defaults_wm8962[] = {
 };
 
 static struct route_setting bt_output_wm8962[] = {
+	{
+		.ctl_name = MIXER_WM8962_AUDIO_MODE,
+		.strval = MIXER_WM8962_AUDIO_MODE_BT_MUSIC,
+	},
     {
         .ctl_name = NULL,
     },
@@ -133,6 +146,10 @@ static struct route_setting earpiece_output_wm8962[] = {
 };
 
 static struct route_setting vx_hs_mic_input_wm8962[] = {
+	{
+		.ctl_name = MIXER_WM8962_AUDIO_MODE,
+		.strval = MIXER_WM8962_AUDIO_MODE_CALL,
+	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -190,10 +207,6 @@ static struct route_setting vx_hs_mic_input_wm8962[] = {
         .intval = 121,
     },
 #endif
-    {
-        .ctl_name = MIXER_WM8962_AUDIO_MODE,
-        .strval = "SlaveCall",
-    },
     {
         .ctl_name = NULL,
     },
@@ -277,6 +290,10 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 
 
 static struct route_setting vx_main_mic_input_wm8962[] = {
+	{
+		.ctl_name = MIXER_WM8962_AUDIO_MODE,
+		.strval = MIXER_WM8962_AUDIO_MODE_CALL,
+	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -334,10 +351,6 @@ static struct route_setting vx_main_mic_input_wm8962[] = {
         .intval = 121,
     },
 #endif
-    {
-        .ctl_name = MIXER_WM8962_AUDIO_MODE,
-        .strval = "SlaveCall",
-    },
     {
         .ctl_name = NULL,
     },
@@ -383,6 +396,10 @@ static struct route_setting mm_hs_mic_input_wm8962[] = {
 };
 
 static struct route_setting vx_bt_mic_input_wm8962[] = {
+	{
+		.ctl_name = MIXER_WM8962_AUDIO_MODE,
+		.strval = MIXER_WM8962_AUDIO_MODE_BT_CALL,
+	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -440,10 +457,6 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
         .intval = 121,
     },
 #endif
-    {
-        .ctl_name = MIXER_WM8962_AUDIO_MODE,
-        .strval = "BtSlaveCall",
-    },
     {
         .ctl_name = NULL,
     },
