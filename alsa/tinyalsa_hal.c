@@ -345,6 +345,15 @@ static void select_mode(struct imx_audio_device *adev)
     } else {
         ALOGW("Leaving IN_CALL state, in_call=%d, mode=%d",
              adev->in_call, adev->mode);
+
+		set_route_by_array_all(adev, bt_output, 0);
+		set_route_by_array_all(adev, hs_output, 0);
+		set_route_by_array_all(adev, speaker_output, 0);
+		set_route_by_array_all(adev, earpiece_output, 0);
+		set_route_by_array_all(adev, vx_bt_mic_input, 0);
+		set_route_by_array_all(adev, vx_hs_mic_input, 0);
+		set_route_by_array_all(adev, vx_main_mic_input, 0);
+
         if (adev->in_call) {
             adev->in_call = 0;
             force_all_standby(adev);
