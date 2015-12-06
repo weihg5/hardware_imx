@@ -507,7 +507,7 @@ CLog::CLog(const char* name, int max, bool verbose)
 		gid_t gids[] = { AID_SDCARD_RW };
 		if (setgroups(sizeof(gids)/sizeof(gids[0]), gids) != 0)
 		{
-			UBX_LOG(LCAT_ERROR, "cannot get write accress to sdcard %d", errno);
+			UBX_LOG(LCAT_ERROR, "Log module cannot get write accress to sdcard %d. and use /data instead", errno);
 			// gps log
 			env = "/data"; // todo remove this line
 		}
