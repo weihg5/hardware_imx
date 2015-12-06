@@ -69,6 +69,7 @@
  #include "ubx_agpsIf.h"
 #endif
 
+#include "ubx_board.h"
 ///////////////////////////////////////////////////////////////////////////////
 // Types & Definitions
 #define AIDING_DATA_FILE "/data/persistance.agnss" //!< Default path to the persistence file
@@ -1310,8 +1311,8 @@ bool CUbxGpsState::powerOn(void)
     // Place any code to handle switching power to the device ON
     // HERE
     // This is optional
-	
-    UBX_LOG(LCAT_VERBOSE, "placeholder for power ON function");
+	gps_power(1);
+    UBX_LOG(LCAT_VERBOSE, "fsl gpio for power ON function");
 
 	return false;		// Return true if power was successfully turned on
 }
@@ -1322,8 +1323,8 @@ void CUbxGpsState::powerOff(void)
     // Place any code to handle switching power to the device OFF
     // HERE
     // This is optional
-
-    UBX_LOG(LCAT_VERBOSE, "placeholder for power OFF function");
+	gps_power(0);
+    UBX_LOG(LCAT_VERBOSE, "fsl gpio for power OFF function");
 }
 
 
