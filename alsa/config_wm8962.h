@@ -23,7 +23,7 @@
 #define WM8962_DEBUG	1
 
 #define MIXER_WM8962_AUDIO_MODE                     "AudioMode"
-#define MIXER_WM8962_AUDIO_MODE_MUSIC               "MasterMusic"
+#define MIXER_WM8962_AUDIO_MODE_MUSIC               "SlaveMusic"
 #define MIXER_WM8962_AUDIO_MODE_CALL                "SlaveCall"
 #define MIXER_WM8962_AUDIO_MODE_BT_MUSIC            "BtSlaveMusic"
 #define MIXER_WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
@@ -58,10 +58,6 @@
 /* These are values that never change */
 static struct route_setting defaults_wm8962[] = {
     /* general */
-	{
-		.ctl_name = MIXER_WM8962_AUDIO_MODE,
-		.strval = MIXER_WM8962_AUDIO_MODE_MUSIC,
-	},
     {
         .ctl_name = MIXER_WM8962_DIGITAL_PLAYBACK_VOLUME,
         .intval = 96,
@@ -72,10 +68,6 @@ static struct route_setting defaults_wm8962[] = {
 };
 
 static struct route_setting bt_output_wm8962[] = {
-	{
-		.ctl_name = MIXER_WM8962_AUDIO_MODE,
-		.strval = MIXER_WM8962_AUDIO_MODE_BT_MUSIC,
-	},
     {
         .ctl_name = NULL,
     },
@@ -146,10 +138,6 @@ static struct route_setting earpiece_output_wm8962[] = {
 };
 
 static struct route_setting vx_hs_mic_input_wm8962[] = {
-	{
-		.ctl_name = MIXER_WM8962_AUDIO_MODE,
-		.strval = MIXER_WM8962_AUDIO_MODE_CALL,
-	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -290,10 +278,6 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 
 
 static struct route_setting vx_main_mic_input_wm8962[] = {
-	{
-		.ctl_name = MIXER_WM8962_AUDIO_MODE,
-		.strval = MIXER_WM8962_AUDIO_MODE_CALL,
-	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -396,10 +380,6 @@ static struct route_setting mm_hs_mic_input_wm8962[] = {
 };
 
 static struct route_setting vx_bt_mic_input_wm8962[] = {
-	{
-		.ctl_name = MIXER_WM8962_AUDIO_MODE,
-		.strval = MIXER_WM8962_AUDIO_MODE_BT_CALL,
-	},
     {
         .ctl_name = MIXER_WM8962_CAPTURE_SWITCH,
         .intval = 1,
@@ -468,6 +448,26 @@ static struct route_setting mm_bt_mic_input_wm8962[] = {
     },
 };
 
+static struct route_setting audio_mode_normal_wm8962[] = {
+    {
+        .ctl_name = MIXER_WM8962_AUDIO_MODE,
+        .strval = MIXER_WM8962_AUDIO_MODE_MUSIC,
+    },
+    {
+        .ctl_name = NULL,
+    },
+};
+
+static struct route_setting audio_mode_incall_wm8962[] = {
+    {
+        .ctl_name = MIXER_WM8962_AUDIO_MODE,
+        .strval = MIXER_WM8962_AUDIO_MODE_CALL,
+    },
+    {
+        .ctl_name = NULL,
+    },
+};
+
 /* ALSA cards for IMX, these must be defined according different board / kernel config*/
 static struct audio_card  wm8962_card = {
     .name = "wm8962-audio",
@@ -498,6 +498,12 @@ static struct audio_card  wm8962_card = {
     .mm_hs_mic_input     = mm_hs_mic_input_wm8962,
     .vx_bt_mic_input     = vx_bt_mic_input_wm8962,
     .mm_bt_mic_input     = mm_bt_mic_input_wm8962,
+    .audio_modes         = {
+		audio_mode_normal_wm8962,
+		audio_mode_normal_wm8962,
+		audio_mode_incall_wm8962,
+		audio_mode_normal_wm8962,
+    },
     .card                = 0,
     .out_rate            = 0,
     .out_channels        = 0,

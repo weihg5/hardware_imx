@@ -93,14 +93,6 @@
 #define PRODUCT_DEVICE_AUTO     "sabreauto"
 #define SUPPORT_CARD_NUM        7
 
-#define set_route_by_array_all(adev, route, enable) \
-	do { \
-		int i; \
-		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) { \
-			set_route_by_array((adev)->mixer[i], (adev)->card_list[i]->route, enable); \
-		} \
-	} while (0)
-
 /*"null_card" must be in the end of this array*/
 struct audio_card *audio_card_list[SUPPORT_CARD_NUM] = {
     &wm8958_card,
@@ -265,21 +257,16 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
     /* Go through the route array and set each value */
     i = 0;
     while (route[i].ctl_name) {
-		ALOGE("%s: ctl_name = %s, enable = %s", __FUNCTION__, route[i].ctl_name, enable ? "true" : "false");
         ctl = mixer_get_ctl_by_name(mixer, route[i].ctl_name);
-        if (!ctl) {
-			ALOGE("%s: ctl_name = %s not found", __FUNCTION__, route[i].ctl_name);
+        if (!ctl)
             return -EINVAL;
-        }
 
         if (route[i].strval) {
-			ALOGE("%s: strval = %s", __FUNCTION__, route[i].strval);
             if (enable)
                 mixer_ctl_set_enum_by_string(ctl, route[i].strval);
             else
                 mixer_ctl_set_enum_by_string(ctl, "Off");
         } else {
-			ALOGE("%s: intval = %d", __FUNCTION__, route[i].intval);
             /* This ensures multiple (i.e. stereo) values are set jointly */
             for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
                 if (enable)
@@ -293,6 +280,8 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
 
     return 0;
 }
+
+
 
 static void force_all_standby(struct imx_audio_device *adev)
 {
@@ -315,6 +304,29 @@ static void force_all_standby(struct imx_audio_device *adev)
         pthread_mutex_unlock(&in->lock);
     }
 }
+
+/* Add By Fuang.Cao 2016-01-09 */
+static int cavan_set_audio_mode(struct imx_audio_device *adev, int mode)
+{
+	int i;
+	int ret = 0;
+
+	for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+		ret |= set_route_by_array(adev->mixer[i], adev->card_list[i]->audio_modes[mode], 1);
+	}
+
+	return ret;
+}
+
+static void cavan_check_audio_mode(struct imx_audio_device *adev)
+{
+#ifdef MIXER_WM8962_AUDIO_MODE
+	if (adev->mode == AUDIO_MODE_IN_CALL) {
+		cavan_set_audio_mode(adev, AUDIO_MODE_NORMAL);
+	}
+#endif
+}
+/* End add */
 
 static void select_mode(struct imx_audio_device *adev)
 {
@@ -345,15 +357,6 @@ static void select_mode(struct imx_audio_device *adev)
     } else {
         ALOGW("Leaving IN_CALL state, in_call=%d, mode=%d",
              adev->in_call, adev->mode);
-
-		set_route_by_array_all(adev, bt_output, 0);
-		set_route_by_array_all(adev, hs_output, 0);
-		set_route_by_array_all(adev, speaker_output, 0);
-		set_route_by_array_all(adev, earpiece_output, 0);
-		set_route_by_array_all(adev, vx_bt_mic_input, 0);
-		set_route_by_array_all(adev, vx_hs_mic_input, 0);
-		set_route_by_array_all(adev, vx_main_mic_input, 0);
-
         if (adev->in_call) {
             adev->in_call = 0;
             force_all_standby(adev);
@@ -361,6 +364,8 @@ static void select_mode(struct imx_audio_device *adev)
             select_input_device(adev);
         }
     }
+
+    cavan_set_audio_mode(adev, adev->mode); // Add By Fuang.Cao 2016-01-09
 }
 
 static void select_output_device(struct imx_audio_device *adev)
@@ -409,30 +414,25 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGE("%s: headphone %d ,headset %d ,speaker %d, earpiece %d\n", __FUNCTION__, headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGV("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
-	if (bt_on) {
-		set_route_by_array_all(adev, bt_output, 1);
-	} else if (headset_on || headphone_on) {
-		set_route_by_array_all(adev, hs_output, 1);
-	} else if (speaker_on) {
-		set_route_by_array_all(adev, speaker_output, 1);
-	} else if (earpiece_on) {
-		set_route_by_array_all(adev, earpiece_output, 1);
-	} else {
-		set_route_by_array_all(adev, bt_output, 0);
-		set_route_by_array_all(adev, hs_output, 0);
-		set_route_by_array_all(adev, speaker_output, 0);
-		set_route_by_array_all(adev, earpiece_output, 0);
-	}
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->hs_output, headset_on | headphone_on);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->speaker_output, speaker_on);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_output, earpiece_on);
 
     /* Special case: select input path if in a call, otherwise
        in_set_parameters is used to update the input route
        todo: use sub mic for handsfree case */
     if (adev->mode == AUDIO_MODE_IN_CALL) {
-        if (bt_on) {
-            set_route_by_array_all(adev, vx_bt_mic_input, 1);
-        } else {
+        if (bt_on)
+            for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_bt_mic_input, bt_on);
+        else {
             /* force tx path according to TTY mode when in call */
             switch(adev->tty_mode) {
                 case TTY_MODE_FULL:
@@ -455,15 +455,15 @@ static void select_output_device(struct imx_audio_device *adev)
                     break;
             }
 
-			if (headset_on) {
-				set_route_by_array_all(adev, vx_hs_mic_input, 1);
-			} else if (headphone_on || earpiece_on || speaker_on) {
-				set_route_by_array_all(adev, vx_main_mic_input, 1);
-			} else {
-				set_route_by_array_all(adev, vx_bt_mic_input, 0);
-				set_route_by_array_all(adev, vx_hs_mic_input, 0);
-				set_route_by_array_all(adev, vx_main_mic_input, 0);
-			}
+            if (headset_on)
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 1);
+            else if (headphone_on || earpiece_on || speaker_on)
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 1);
+            else
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
         }
     }
 }
@@ -488,22 +488,24 @@ static void select_input_device(struct imx_audio_device *adev)
         main_mic_on = adev->in_device & AUDIO_DEVICE_IN_BUILTIN_MIC;
     }
 
-    ALOGE("%s: bt_on %d, headset %d, main_mic_on %d\n", __FUNCTION__, bt_on, headset_on, main_mic_on);
-
    /* TODO: check how capture is possible during voice calls or if
     * both use cases are mutually exclusive.
     */
-	if (bt_on) {
-		set_route_by_array_all(adev, mm_bt_mic_input, 1);
-	} else if (headset_on) {
-		set_route_by_array_all(adev, mm_hs_mic_input, 1);
-	} else if (main_mic_on || sub_mic_on) {
-		set_route_by_array_all(adev, mm_main_mic_input, 1);
-	} else {
-		set_route_by_array_all(adev, mm_bt_mic_input, 0);
-		set_route_by_array_all(adev, mm_hs_mic_input, 0);
-		set_route_by_array_all(adev, mm_main_mic_input, 0);
-	}
+    if (bt_on)
+        for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+            set_route_by_array(adev->mixer[i], adev->card_list[i]->mm_bt_mic_input, 1);
+    else {
+        /* Select front end */
+        if (headset_on)
+            for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                set_route_by_array(adev->mixer[i], adev->card_list[i]->mm_hs_mic_input, 1);
+        else if (main_mic_on || sub_mic_on)
+            for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                set_route_by_array(adev->mixer[i], adev->card_list[i]->mm_main_mic_input, 1);
+        else
+            for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                set_route_by_array(adev->mixer[i], adev->card_list[i]->mm_main_mic_input, 0);
+    }
 }
 
 static int get_card_for_device(struct imx_audio_device *adev, int device, unsigned int flag)
@@ -1237,6 +1239,7 @@ static ssize_t out_write_primary(struct audio_stream_out *stream, const void* bu
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
+    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
         ret = start_output_stream_primary(out);
@@ -1327,6 +1330,7 @@ static ssize_t out_write_hdmi(struct audio_stream_out *stream, const void* buffe
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
+    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
         ret = start_output_stream_hdmi(out);
@@ -1420,6 +1424,7 @@ static ssize_t out_write_esai(struct audio_stream_out *stream, const void* buffe
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
+    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
         ret = start_output_stream_esai(out);
@@ -1594,7 +1599,7 @@ static int start_input_stream(struct imx_stream_in *in)
     struct mixer *mixer;
     int rate = 0, channels = 0, format = 0;
 
-    ALOGW("%s: mode = %d", __FUNCTION__, adev->mode);
+    ALOGW("start_input_stream....");
 
     adev->active_input = in;
     if (adev->mode != AUDIO_MODE_IN_CALL) {
@@ -2246,6 +2251,7 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
+    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&in->lock);
     if (in->standby) {
         ret = start_input_stream(in);
@@ -3395,7 +3401,8 @@ static int adev_open(const hw_module_t* module, const char* name,
 
     /* Set the default route before the PCM stream is opened */
     pthread_mutex_lock(&adev->lock);
-    set_route_by_array_all(adev, defaults, 1);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->defaults, 1);
     adev->mode    = AUDIO_MODE_NORMAL;
     adev->out_device = AUDIO_DEVICE_OUT_SPEAKER;
     adev->in_device  = AUDIO_DEVICE_IN_BUILTIN_MIC & ~AUDIO_DEVICE_BIT_IN;
