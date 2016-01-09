@@ -793,6 +793,9 @@ int main()
 			open_wireless(wireless_open);
 		}
 #else
+		if (event.code == KEY_F1 && event.value == 0){
+			send_cmd_wait_ack("AT+DMOCONNECT");
+		}
 		if (event.code == KEY_F2 && event.value == 1){
 			ticks = get_ticks();
 			RFS_INFO("ticks=%lld ms", ticks);
