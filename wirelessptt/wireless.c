@@ -27,6 +27,15 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
+#include <stdint.h>
+#include <errno.h>
+#include <unistd.h>
+#include <poll.h>
+
+#include <sys/cdefs.h>
+#include <sys/types.h>
+
+#include <linux/input.h>
 
 
 #ifdef _ANDROID
@@ -645,9 +654,153 @@ static void set_audio_route(bool enable)
 }
 
 /*****************************************************************************/
+static int wireless_open = 0;
+static int wireless_speek = 0;
+
 #define SYS_FS_DEVICES_DIR "/sys/bus/platform/devices"
 
+static int init()
+{
+#ifdef _ANDROID
+	int err;
+	struct stat file_stat;
+
+	int i, n;
+	struct dirent **namelist;
+
+	RFS_START_FUNC();
+	RFS_INFO("buildtime is %s-%s\n", __DATE__, __TIME__);
+	err = 0;
+
+	n = scandir(SYS_FS_DEVICES_DIR, &namelist, dir_filter, alphasort);
+
+	if (n == -1) {
+		ALOGE("Found zero sr_frs devices:%s", strerror(errno));
+		return -1;
+	}
+
+	if (n != 1) {
+		ALOGE("unexpected - found %d sr_frs devices", n);
+		for (i = 0; i < n; i++)
+			free(namelist[i]);
+		free(namelist);
+		return -1;
+	}
+
+	RFS_DBG("sr_frs sysfs name: %s", namelist[0]->d_name);
+	snprintf(DEV_NAME_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/dev_name", namelist[0]->d_name);
+	snprintf(SQ_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/sq_gpios", namelist[0]->d_name);
+	snprintf(PD_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/pd_gpios", namelist[0]->d_name);
+	snprintf(PTT_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/ptt_gpios", namelist[0]->d_name);
+	snprintf(HL_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/hl_gpios", namelist[0]->d_name);
+	snprintf(VOXDEC_SYSFS, W_SYSFS_SIZE, SYS_FS_DEVICES_DIR"/%s/voxdec_gpios", namelist[0]->d_name);
+
+	free(namelist[0]);
+	free(namelist);
+
+	if (0 == lstat(DEV_NAME_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", DEV_NAME_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", DEV_NAME_SYSFS);
+		return -1;
+	}
+	if (0 == lstat(SQ_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", SQ_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", SQ_SYSFS);
+		return -1;
+	}
+	if (0 == lstat(PD_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", PD_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", PD_SYSFS);
+		return -1;
+	}
+	if (0 == lstat(PTT_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", PTT_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", PTT_SYSFS);
+		return -1;
+	}
+	if (0 == lstat(HL_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", HL_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", HL_SYSFS);
+		return -1;
+	}
+	if (0 == lstat(VOXDEC_SYSFS, &file_stat)) {
+		RFS_DBG("File %s is ok\n", VOXDEC_SYSFS);
+	} else {
+		RFS_DBG("File %s is not found\n", VOXDEC_SYSFS);
+		return -1;
+	}	
+	if (uart_open() < 0){
+		RFS_ERR("open  uart  failt\n");
+		return -1;
+	}
+#endif	
+	return 0;
+}
+
+static void open_wireless(int open)
+{
+	if (open){		
+		set_power("HIGH");
+		set_sleep("WAKE");
+		set_audio_route(true);
+	}else{
+		set_power("LOW");
+		set_sleep("SLEEP");
+		set_audio_route(false);
+	}
+}
+
 int main(int argc, char *argv[])
+{
+	struct input_event event;
+	int len;
+	char *keyboard="/dev/input/event0";
+	int fd = open(keyboard, O_RDONLY);
+	if (fd < 0) {
+		RFS_INFO("open device keyboard error\n");
+		return -1;
+	}
+
+	init();
+	set_speek_dir("RECV");//default is listen
+	while(1){
+		len = read(fd, &event, sizeof(event));
+		if (len <= 0){
+			RFS_INFO("read error\n");
+			return -1;
+		}
+		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
+		if (event.code == 0x3c && event.value == 1){			
+			wireless_open = !wireless_open;
+			RFS_INFO("%s wireless\n", wireless_open?"open":"close");
+			open_wireless(wireless_open);
+		}
+		if (wireless_open ){
+			if (event.code == 0x3d){
+				if (event.value == 1 && !wireless_speek) {
+					RFS_INFO("wireless speek mode\n");
+					set_speek_dir("SEND");
+					wireless_speek = 1;
+				}else if (event.value == 0 && wireless_speek){
+					RFS_INFO("wireless listen mode\n");
+					set_speek_dir("RECV");
+					wireless_speek = 0;
+				}
+			}
+		}
+	}
+	return -1;
+}
+
+#if 0
+#define SYS_FS_DEVICES_DIR "/sys/bus/platform/devices"
+
+int main1(int argc, char *argv[])
 {
 #ifdef _ANDROID
 	int err;
@@ -740,3 +893,5 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+#endif
