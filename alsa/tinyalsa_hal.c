@@ -306,6 +306,10 @@ static void force_all_standby(struct imx_audio_device *adev)
 }
 
 /* Add By Fuang.Cao 2016-01-09 */
+
+#define CAVAN_AUDIO_MASK_OUTPUT		(1 << 0)
+#define CAVAN_AUDIO_MASK_INPUT		(1 << 1)
+
 static int cavan_set_audio_mode(struct imx_audio_device *adev, int mode)
 {
 	int i;
@@ -318,12 +322,29 @@ static int cavan_set_audio_mode(struct imx_audio_device *adev, int mode)
 	return ret;
 }
 
-static void cavan_check_audio_mode(struct imx_audio_device *adev)
+static void cavan_check_audio_mode(struct imx_audio_device *adev, bool standby, int mask)
 {
 #ifdef MIXER_WM8962_AUDIO_MODE
-	if (adev->mode == AUDIO_MODE_IN_CALL) {
-		cavan_set_audio_mode(adev, AUDIO_MODE_NORMAL);
+	int mode;
+	static int active_mask;
+
+	if (adev->mode != AUDIO_MODE_IN_CALL) {
+		return;
 	}
+
+	if (standby) {
+		active_mask &= ~mask;
+	} else {
+		active_mask |= mask;
+	}
+
+	if (active_mask) {
+		mode = AUDIO_MODE_NORMAL;
+	} else {
+		mode = AUDIO_MODE_IN_CALL;
+	}
+
+	cavan_set_audio_mode(adev, mode);
 #endif
 }
 /* End add */
@@ -955,6 +976,7 @@ static int do_output_standby(struct imx_stream_out *out)
         }
 
         out->standby = 1;
+        cavan_check_audio_mode(adev, true, CAVAN_AUDIO_MASK_OUTPUT); // Add By Fuang.Cao 2016-01-09
     }
     return 0;
 }
@@ -1239,9 +1261,9 @@ static ssize_t out_write_primary(struct audio_stream_out *stream, const void* bu
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
-    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
+        cavan_check_audio_mode(adev, false, CAVAN_AUDIO_MASK_OUTPUT); // Add By Fuang.Cao 2016-01-09
         ret = start_output_stream_primary(out);
         if (ret != 0) {
             pthread_mutex_unlock(&adev->lock);
@@ -1330,9 +1352,9 @@ static ssize_t out_write_hdmi(struct audio_stream_out *stream, const void* buffe
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
-    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
+        cavan_check_audio_mode(adev, false, CAVAN_AUDIO_MASK_OUTPUT); // Add By Fuang.Cao 2016-01-09
         ret = start_output_stream_hdmi(out);
         if (ret != 0) {
             pthread_mutex_unlock(&adev->lock);
@@ -1424,9 +1446,9 @@ static ssize_t out_write_esai(struct audio_stream_out *stream, const void* buffe
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
-    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&out->lock);
     if (out->standby) {
+        cavan_check_audio_mode(adev, false, CAVAN_AUDIO_MASK_OUTPUT); // Add By Fuang.Cao 2016-01-09
         ret = start_output_stream_esai(out);
         if (ret != 0) {
             pthread_mutex_unlock(&adev->lock);
@@ -1783,6 +1805,7 @@ static int do_input_standby(struct imx_stream_in *in)
         }
 
         in->standby = 1;
+        cavan_check_audio_mode(adev, true, CAVAN_AUDIO_MASK_INPUT); // Add By Fuang.Cao 2016-01-09
     }
     return 0;
 }
@@ -2251,9 +2274,9 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
      * mutex
      */
     pthread_mutex_lock(&adev->lock);
-    cavan_check_audio_mode(adev); // Add By Fuang.Cao 2016-01-09
     pthread_mutex_lock(&in->lock);
     if (in->standby) {
+        cavan_check_audio_mode(adev, false, CAVAN_AUDIO_MASK_INPUT); // Add By Fuang.Cao 2016-01-09
         ret = start_input_stream(in);
         if (ret == 0) {
             in->standby = 0;
