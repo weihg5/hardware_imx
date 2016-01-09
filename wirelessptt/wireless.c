@@ -477,6 +477,16 @@ static void msleep(int msec)
 		}
 	}while(!ret);
 }
+
+
+static uint64_t get_ticks()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec/1000;
+}
+
 static int g_exit = 0;
 void exit_func(char *p)
 {
@@ -755,10 +765,11 @@ static void open_wireless(int open)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	struct input_event event;
 	int len;
+	uint64_t ticks = 0;
 	char *keyboard="/dev/input/event0";
 	int fd = open(keyboard, O_RDONLY);
 	if (fd < 0) {
@@ -775,11 +786,24 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
+#if 0
 		if (event.code == 0x3c && event.value == 1){			
 			wireless_open = !wireless_open;
 			RFS_INFO("%s wireless\n", wireless_open?"open":"close");
 			open_wireless(wireless_open);
 		}
+#else
+		if (event.code == 0x3c && event.value == 1){
+			ticks = get_ticks();
+			RFS_INFO("ticks=%lld ms", ticks);
+		}else if (event.code == 0x3c && event.value == 0){
+			if (get_ticks() - ticks >= 2*1000) {
+				wireless_open = !wireless_open;
+				RFS_INFO("%s wireless\n", wireless_open?"open":"close");
+				open_wireless(wireless_open);
+			}
+		}
+#endif
 		if (wireless_open ){
 			if (event.code == 0x3d){
 				if (event.value == 1 && !wireless_speek) {
