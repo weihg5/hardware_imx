@@ -793,10 +793,10 @@ int main()
 			open_wireless(wireless_open);
 		}
 #else
-		if (event.code == 0x3c && event.value == 1){
+		if (event.code == KEY_F2 && event.value == 1){
 			ticks = get_ticks();
 			RFS_INFO("ticks=%lld ms", ticks);
-		}else if (event.code == 0x3c && event.value == 0){
+		}else if (event.code == KEY_F2 && event.value == 0){
 			if (get_ticks() - ticks >= 2*1000) {
 				wireless_open = !wireless_open;
 				RFS_INFO("%s wireless\n", wireless_open?"open":"close");
@@ -805,7 +805,7 @@ int main()
 		}
 #endif
 		if (wireless_open ){
-			if (event.code == 0x3d){
+			if (event.code == KEY_F3){
 				if (event.value == 1 && !wireless_speek) {
 					RFS_INFO("wireless speek mode\n");
 					set_speek_dir("SEND");
