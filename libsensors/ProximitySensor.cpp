@@ -48,7 +48,7 @@ ProximitySensor::ProximitySensor()
 	mEnabled = fileReadBool(FILE_ENABLE, false);
 
     mPendingEvent.version = sizeof(sensors_event_t);
-    mPendingEvent.sensor = ID_P;
+    mPendingEvent.sensor = ID_PX;
     mPendingEvent.type = SENSOR_TYPE_PROXIMITY;
     memset(mPendingEvent.data, 0, sizeof(mPendingEvent.data));
 }
