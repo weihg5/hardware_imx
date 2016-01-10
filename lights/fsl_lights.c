@@ -86,6 +86,7 @@ static int set_light_backlight_base(struct light_device_t* dev,
     fclose(file);
 
     max_brightness = atoi((char *) &max_brightness);
+#if 0 // Modify By Fuang.Cao 2016-01-11
     //brightness = brightness * max_brightness / MAX_BRIGHTNESS;
     for (i = 0; i < 8; i++)
     {
@@ -99,6 +100,9 @@ static int set_light_backlight_base(struct light_device_t* dev,
     if (tmp_br > max_brightness) {
         tmp_br = max_brightness;
     }
+#else
+    tmp_br  = brightness * max_brightness / MAX_BRIGHTNESS;
+#endif
     ALOGV("set_light, max_brightness=%d, target brightness=%d",
         max_brightness, tmp_br);
 
