@@ -799,7 +799,8 @@ int main()
 			return -1;
 		}
 		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
-		process_keybl();
+		if (len == sizeof(event))//have key changed
+			process_keybl();
 #if 0
 		if (event.code == 0x3c && event.value == 1){			
 			wireless_open = !wireless_open;
