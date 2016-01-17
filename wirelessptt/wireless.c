@@ -764,7 +764,20 @@ static void open_wireless(int open)
 		set_audio_route(false);
 	}
 }
+#define KEYBOARD_BL "/sys/class/timed_output/key_bl/enable"
 
+static void process_keybl()
+{
+	char *value = "2000";
+	int fd = open((const char*) KEYBOARD_BL, O_RDWR);
+	if (fd < 0) {
+		RFS_INFO("open %s failt\n", KEYBOARD_BL);
+		return;
+	}
+	write(fd, value, strlen(value));
+
+	close(fd);
+}
 int main()
 {
 	struct input_event event;
@@ -786,6 +799,7 @@ int main()
 			return -1;
 		}
 		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
+		process_keybl();
 #if 0
 		if (event.code == 0x3c && event.value == 1){			
 			wireless_open = !wireless_open;
