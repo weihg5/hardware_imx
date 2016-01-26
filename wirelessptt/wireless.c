@@ -783,12 +783,33 @@ int main()
 	struct input_event event;
 	int len;
 	uint64_t ticks = 0;
-	char *keyboard="/dev/input/event0";
-	int fd = open(keyboard, O_RDONLY);
-	if (fd < 0) {
-		RFS_INFO("open device keyboard error\n");
-		return -1;
+	char *keyboard="/dev/input/event";
+	char kb_name[128];
+	char buffer[32];
+	int i;
+	int fd;
+	memset(kb_name, 0, 128);
+	for (i = 0; i < 10; i++){
+		sprintf(kb_name, "%s%d", keyboard, i);
+		RFS_INFO("kb_name=%s\n", kb_name);
+		fd = open(kb_name, O_RDONLY);
+		if (fd < 0){
+			RFS_INFO("can not open %s input device\n", kb_name);
+			continue;
+		}
+		if(ioctl(fd, EVIOCGNAME(sizeof(buffer) - 1), &buffer) < 1){
+			RFS_INFO("can not get name  %s input device\n", kb_name);
+			close(fd);
+			continue;
+		}
+		RFS_INFO("get %s input device , name=%s\n", kb_name, buffer);
+		if (!strncmp(buffer, "imx-keypad", strlen("imx-keypad"))){
+			RFS_INFO("Found.\n");
+			break;
+		}
+		close(fd);
 	}
+	
 
 	init();
 	set_speek_dir("RECV");//default is listen
