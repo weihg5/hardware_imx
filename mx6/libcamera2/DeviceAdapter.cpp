@@ -27,6 +27,8 @@
 #define DEFAULT_ERROR_NAME '0'
 #define DEFAULT_ERROR_NAME_str "0"
 
+static int g_CameraHandler = -1;
+
 sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
 {
     sp<DeviceAdapter> devAdapter;
@@ -85,9 +87,11 @@ DeviceAdapter::DeviceAdapter()
 DeviceAdapter::~DeviceAdapter()
 {
     // Close the camera handle and free the video info structure
+	ALOGE("close DeviceAdapter\n");
     if (mCameraHandle > 0) {
         close(mCameraHandle);
         mCameraHandle = -1;
+		g_CameraHandler = -1;
     }
 
     if (mVideoInfo) {
@@ -197,10 +201,29 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
         FLOGE("invalid camera devpath in initialize");
         return BAD_VALUE;
     }
-
+	if (g_CameraHandler != -1){
+		ALOGE("before open ,we must close the v4l2 device, the two camera use same v4l2 dev\n");
+		close(g_CameraHandler);
+	}
     if (info.devPath[0] != '\0') {
         mCameraHandle = open(info.devPath, O_RDWR);
     }
+	for (int i = 0; i < 2; i++) {
+		struct v4l2_dbg_chip_ident vid_chip;
+        struct v4l2_control ctrl;
+        ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
+        ctrl.value = i;
+        if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
+            ALOGE("set ctrl switch camera failed\n");
+            continue;
+        }
+		if (ioctl(mCameraHandle, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) >= 0){
+			if (strstr(vid_chip.match.name, info.name)){
+				ALOGE("Switch to %s\n", info.name);
+				break;
+			}
+		}
+	}
     if (mCameraHandle < 0) {
         memset((void*)info.devPath, 0, sizeof(info.devPath));
         GetDevPath(info.name, (char*)info.devPath, CAMAERA_FILENAME_LENGTH);
@@ -247,6 +270,7 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
     mVideoInfo->isStreamOn = false;
     mImageCapture          = false;
 
+	g_CameraHandler = mCameraHandle;
     mCpuNum = GetCpuNum();
     ALOGE("cpu num %d", mCpuNum);
         

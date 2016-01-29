@@ -18,6 +18,7 @@
 #define LOG_TAG "CameraHAL"
 #include <linux/videodev2.h>
 #include <linux/mxcfb.h>
+#include <linux/mxc_v4l2.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -439,41 +440,37 @@ int GetDevPath(const char  *pCameraName,
                 fd = 0;
                 continue;
             } else if (v4l2_cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
-                if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
-                    if(strstr((const char*)v4l2_cap.driver, pCameraName)) {
-                       if (pathLen > strlen(dev_node)) {
-                            strcpy(pCameraDevPath, dev_node);
-                            ALOGI("Get sensor %s's dev path %s, card %s, driver %s",
-                                  pCameraName,
-                                  pCameraDevPath,
-                                  (const char*)v4l2_cap.card,
-                                  (const char*)v4l2_cap.driver);
-                            retCode = 0;
-                        }
-                        close(fd);
-                        fd = 0;
-                        break;
-                    }
-                    close(fd);
-                    fd = 0;
-                    continue;
-                }
-                if (strstr(vid_chip.match.name, pCameraName)) {
-                    // fsl csi/mipi camera name and path match
-                    if (pathLen > strlen(dev_node)) {
-                        strcpy(pCameraDevPath, dev_node);
-                        ALOGI("Get sensor %s's dev path %s",
-                              pCameraName,
-                              pCameraDevPath);
-                        retCode = 0;
-                    }
-                    close(fd);
-                    fd = 0;
-                    break;
-                }
-            }
+				for (int i = 0; i < 2; i++) {
+					struct v4l2_control ctrl;
+					ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
+					ctrl.value = i;
+					if (ioctl(fd, VIDIOC_S_CTRL, &ctrl) < 0) {
+						ALOGE("set ctrl switch camera failed\n");
+						continue;
+					}
+				
+					if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
+						continue;
+					}
+					if (strstr(vid_chip.match.name, pCameraName)) {
+						// fsl csi/mipi camera name and path match
+						if (pathLen > strlen(dev_node)) {
+							strcpy(pCameraDevPath, dev_node);
+							ALOGI("Get sensor %s's dev path %s",
+								pCameraName,
+								pCameraDevPath);
+							retCode = 0;
+						}
+						close(fd);
+						fd = 0;
+						break;
+					}
+				}
+			}
             close(fd);
             fd = 0;
+			if (retCode == 0)
+				break;
         }
         closedir(v4l_dir);
     }

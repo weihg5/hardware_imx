@@ -50,7 +50,7 @@
 #include <linux/videodev2.h>
 #include <hardware/camera2.h>
 #include "MetadaManager.h"
-
+#include <linux/mxc_v4l2.h>
 using namespace android;
 
 //#define CAMERA_HAL_DEBUG
