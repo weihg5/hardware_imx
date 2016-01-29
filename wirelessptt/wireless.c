@@ -803,11 +803,12 @@ int main()
 			continue;
 		}
 		RFS_INFO("get %s input device , name=%s\n", kb_name, buffer);
-		if (!strncmp(buffer, "imx-keypad", strlen("imx-keypad"))){
+		if (strstr(buffer, ".kpp")){
 			RFS_INFO("Found.\n");
 			break;
+		} else{
+			 close(fd);
 		}
-		close(fd);
 	}
 	
 
