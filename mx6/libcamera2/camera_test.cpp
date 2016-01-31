@@ -86,7 +86,7 @@ int convertPixelFormatToV4L2Format(PixelFormat format)
             FLOGE("Error: format:0x%x not supported!", format);
             break;
     }
-    FLOGI("pixel format: 0x%x", nFormat);
+    FLOGI("pixel format: 0x%x, %c%c%c%c", nFormat, nFormat%0xff, (nFormat>>8)&0xff, (nFormat>>16)&0xff, (nFormat>>24)&0xff);
     return  nFormat;
 }
 

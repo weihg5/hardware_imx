@@ -56,7 +56,7 @@ public:
     int getStreamId() {return mStreamId;}
     int getMaxBuffers() {return mMaxProducerBuffers;}
 
-    int renderBuffer(StreamBuffer *buffer);
+    int renderBuffer(StreamBuffer *buffer, int isjpeg = 0);
     int requestBuffer(StreamBuffer* buffer);
     int cancelBuffer(StreamBuffer *buffer);
 

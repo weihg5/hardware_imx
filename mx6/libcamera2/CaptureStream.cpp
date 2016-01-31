@@ -192,7 +192,7 @@ int CaptureStream::processFrame(CameraFrame *frame)
 	}
 
 	buffer.mTimeStamp = frame->mTimeStamp;
-	ret = renderBuffer(&buffer);
+	ret = renderBuffer(&buffer, 1);
     if (ret != NO_ERROR) {
         FLOGE("%s renderBuffer failed", __FUNCTION__);
         goto exit_err;

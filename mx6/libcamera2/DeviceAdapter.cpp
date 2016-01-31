@@ -305,8 +305,8 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
     if ((width > 1920) || (height > 1080)) {
         fps = 15;
     }
-    FLOGI("Width * Height %d x %d format 0x%x, fps: %d",
-          width, height, vformat, fps);
+    FLOGI("Width * Height %d(%d) x %d(%d) format 0x%x, fps: %d",
+          width, width & 0xFFFFFFF8, height, height & 0xFFFFFFF8, vformat, fps);
 
     mVideoInfo->width       = width;
     mVideoInfo->height      = height;
@@ -678,7 +678,7 @@ int DeviceAdapter::deviceThread()
         }
         return BAD_VALUE;
     }
-
+	FLOGE("get frame\n");
     if (mImageCapture) {
         sp<CameraEvent> cameraEvt = new CameraEvent();
         cameraEvt->mEventType = CameraEvent::EVENT_SHUTTER;

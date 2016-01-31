@@ -96,6 +96,119 @@ static void YUV422ToYUV420Interleave(u8* pbySrcY, u8* pbySrcC,
     return;
 }
 
+static char * g_tempBuffer = NULL;
+static int  g_size = 0;
+#if 0
+#if 0
+public static void rotateYUV240SP(byte[] src,byte[] des,int width,int height)
+ {
+   
+  int wh = width * height;
+  //Ðý×ªY
+  int k = 0;
+  for(int i=0;i<width;i++) {
+   for(int j=0;j<height;j++)
+   {
+               des[k] = src[width*j + i];   
+         k++;
+   }
+  }
+  
+  for(int i=0;i<width;i+=2) {
+   for(int j=0;j<height/2;j++)
+   { 
+               des[k] = src[wh+ width*j + i]; 
+               des[k+1]=src[wh + width*j + i+1];
+         k+=2;
+   }
+  }
+  
+  
+ }
+
+ #endif
+
+static void Nv12Rot90(void *dest, void *src, int width, int height)
+{
+	int wh = width * height;
+	char *yuv = (char *)dest;
+	char *data = (char *)src;
+
+	//Ðý×ªY
+	int k = 0;
+	int i, j;
+	for( i=0 ;i<width;i++) {
+	 for(j=0;j<height;j++)
+	 {
+				 yuv[k] = data[width*(height-1-j) + i];   
+		   k++;
+	 }
+	}
+
+	yuv += wh;
+	data += wh;
+	k = 0;
+	for(i=0;i<width;i+=2) {
+	 for(j=0;j<height/2;j++)
+	 { 
+				 yuv[k] = data[width*(height/2 - 1-j) + i]; 
+				 yuv[k+1]=data[width*(height/2 - 1-j) + i+1];
+		   k+=2;
+	 }
+	}
+}
+#else
+static void Nv12Rot90(void *dst, void *src, int w, int h)
+{
+	int i = 0;
+	char *yuv = (char *)dst;
+	char *data = (char *)src;
+	int wh = w*h;
+	
+	for(int x = 0;x < w;x++)
+	{
+	   for(int y = h-1;y >= 0;y--)
+	   {
+		  yuv[h-1-y+x*w] = data[y*w+x];
+		  i++;
+	   }
+	
+	}
+	//memset(yuv, 0, wh);
+	// Rotate the U and V color components
+	yuv += wh;
+	memset(yuv, 0, wh/2);
+	#if 0
+	i = 0;//wh*3/2-1;
+	for(int x = 0;x < w;x=x+2)
+	{
+	   for(int y = h/2-1; y >=0 ;y--)
+	   {
+		  yuv[i] = data[(wh)+(y*w)+x];
+		  
+		  yuv[i+1] = data[(wh)+(y*w)+(x+1)];
+		  i+=2;
+	   }
+	}
+	#endif
+
+}
+#endif
+static void RotCameraData(void *data, int w, int h)
+{
+	if (g_size < (w*h*3/2)){
+		FLOGE("malloc temp data\n");
+		if (g_tempBuffer)
+			free(g_tempBuffer);
+		g_size = w*h*3/2;
+		g_tempBuffer = (char *)malloc(g_size);
+	}
+	if (g_tempBuffer){
+		FLOGE("Nv12Rot90, %d X %d\n", w, h);
+		Nv12Rot90(g_tempBuffer, data, w, h);
+		memcpy(data, g_tempBuffer, g_size);
+	}
+}
 StreamAdapter::StreamAdapter(int id)
     : mPrepared(false), mStarted(false), mStreamId(id), mWidth(0), mHeight(0), mFormat(0), mUsage(0),
       mMaxProducerBuffers(0), mNativeWindow(NULL), mStreamState(STREAM_INVALID), mReceiveFrame(true)
@@ -307,6 +420,7 @@ void StreamAdapter::handleCameraFrame(CameraFrame *frame)
     }
     //don't need receive camera frame.
     if (!mReceiveFrame) {
+		FLOGE("not revevice frame\n");
         return;
     }
     else if (mStreamId == STREAM_ID_JPEG) {
@@ -315,6 +429,7 @@ void StreamAdapter::handleCameraFrame(CameraFrame *frame)
     }
     //the frame processed in StreamThread.
     frame->addReference();
+	FLOGE("POST stream frame\n");
     mThreadQueue.postMessage(new CMessage(STREAM_FRAME, (int)frame));
 }
 
@@ -407,7 +522,7 @@ int StreamAdapter::processFrame(CameraFrame *frame)
 {
     status_t ret = NO_ERROR;
     int size;
-
+	FLOGE("processFrame\n");
     if (mShowFps) {
         showFps();
     }
@@ -422,10 +537,12 @@ int StreamAdapter::processFrame(CameraFrame *frame)
     size = (frame->mSize > buffer.mSize) ? buffer.mSize : frame->mSize;
     if (mStreamId == STREAM_ID_PRVCB &&
             buffer.mFormat == HAL_PIXEL_FORMAT_YCbCr_420_P) {
+        FLOGE("HAL_PIXEL_FORMAT_YCbCr_420_P\n");
         convertNV12toYV12(&buffer, frame);
     }
     else if (mStreamId == STREAM_ID_PRVCB && buffer.mWidth <= 1280 &&
             buffer.mFormat == HAL_PIXEL_FORMAT_YCbCr_420_SP) {
+        FLOGE("HAL_PIXEL_FORMAT_YCbCr_420_SP\n");
         convertNV12toNV21(&buffer, frame);
     }
     else if (g2dHandle != NULL) {
@@ -436,7 +553,7 @@ int StreamAdapter::processFrame(CameraFrame *frame)
         d_buf.buf_vaddr = buffer.mVirtAddr;
         g2d_copy(g2dHandle, &d_buf, &s_buf, size);
         g2d_finish(g2dHandle);
-
+		FLOGE("g2d buffer format=%d, %x\n", buffer.mFormat, buffer.mFormat);
         //when 1080p recording, although g2d_copy is fast, but vpu encode is slower,
         //so slow down g2d_copy to free bus, then vpu encode run faster,
         //It's a balance.
@@ -446,10 +563,12 @@ int StreamAdapter::processFrame(CameraFrame *frame)
         }
     }
 	else if(mDeviceAdapter.get() && mDeviceAdapter->UseMJPG()) {
+        FLOGE("UseMJPG\n");
 		YUV422ToYUV420Interleave((unsigned char *)frame->mVirtAddr, (unsigned char *)frame->mVirtAddr + frame->mWidth * frame->mHeight,
             frame->mWidth, frame->mWidth/2, frame->mHeight,
             (unsigned char *)buffer.mVirtAddr, (unsigned char *)buffer.mVirtAddr + buffer.mWidth * buffer.mHeight, buffer.mWidth, buffer.mWidth/4, buffer.mHeight);
 	} else {
+		FLOGE("memcpy buffer format=%d, %x\n", buffer.mFormat, buffer.mFormat);
         memcpy(buffer.mVirtAddr, (void *)frame->mVirtAddr, size);
     }
 
@@ -527,15 +646,21 @@ int StreamAdapter::requestBuffer(StreamBuffer* buffer)
     return 0;
 }
 
-int StreamAdapter::renderBuffer(StreamBuffer *buffer)
+int StreamAdapter::renderBuffer(StreamBuffer *buffer,  int isjpeg)
 {
     status_t ret = NO_ERROR;
 
     GraphicBufferMapper& mapper = GraphicBufferMapper::get();
-
-    // unlock buffer before sending to stream
-    mapper.unlock(buffer->mBufHandle);
-
+	if (!isjpeg) {
+		FLOGE("render Buffer buffer->mSize = %d, %d\n", buffer->mSize, buffer->mWidth*buffer->mHeight*3/2);
+		FLOGE("render Buffer buffer->mSize = %d X %d\n", buffer->mWidth, buffer->mHeight);
+    
+    	RotCameraData(buffer->mVirtAddr, buffer->mWidth, buffer->mHeight);
+		//memset(buffer->mVirtAddr, 0, 1024*10);
+	}
+	// unlock buffer before sending to stream
+	mapper.unlock(buffer->mBufHandle);
+	
     ret = mNativeWindow->enqueue_buffer(mNativeWindow, buffer->mTimeStamp,
                                         &buffer->mBufHandle);
     if (ret != 0) {

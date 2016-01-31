@@ -193,6 +193,7 @@ int PreviewStream::registerBuffers(int num_buffers, buffer_handle_t *buffers)
         mCameraBuffer[i].mWidth  = mWidth;
         mCameraBuffer[i].mHeight = mHeight;
         mCameraBuffer[i].mFormat = mFormat;
+		mCameraBuffer[i].mVirtAddr = pVaddr;
         mCameraBuffer[i].setState(CameraFrame::BUFS_IN_SERVICE);
     }
 
@@ -240,7 +241,7 @@ int PreviewStream::processFrame(CameraFrame *frame)
         showFps();
     }
 
-    ret = renderBuffer(frame);
+    ret = renderBuffer(frame, 0);
     if (ret != NO_ERROR) {
         FLOGE("%s renderBuffer failed, state %d", __FUNCTION__, frame->getState());
         goto err_exit;
