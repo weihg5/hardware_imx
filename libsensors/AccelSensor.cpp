@@ -162,15 +162,17 @@ int AccelSensor::read_fifo(){
 				data = ((int16_t *)(&buf[offset]));
 				for(i = 0 ; i <  count; i++){
 					axis = *data++;
-					mFifoPendingEvent[i].acceleration.x = ACC_DATA_CONVERSION(axis);
+					mFifoPendingEvent[i].acceleration.y = -ACC_DATA_CONVERSION(axis);
 					axis = *data++;
-					mFifoPendingEvent[i].acceleration.y = ACC_DATA_CONVERSION(axis);
+					mFifoPendingEvent[i].acceleration.x = -ACC_DATA_CONVERSION(axis);
 					axis = *data++;
-					mFifoPendingEvent[i].acceleration.z = ACC_DATA_CONVERSION(axis);
+					mFifoPendingEvent[i].acceleration.z = -ACC_DATA_CONVERSION(axis);
 					mFifoPendingEvent[i].timestamp = timestamp - (count - i -1)* period;
 					mFifoPendingEvent[i].sensor  = ID_A;
 					mFifoPendingEvent[i].type    = SENSOR_TYPE_ACCELEROMETER;
 					mFifoPendingEvent[i].acceleration.status = SENSOR_STATUS_ACCURACY_HIGH;
+					//ALOGE("x=%f, y=%f, z=%f\n", mFifoPendingEvent[i].acceleration.x, 
+					//	mFifoPendingEvent[i].acceleration.y, mFifoPendingEvent[i].acceleration.z);
 				}
 				mFifoCount = count;
 			}
@@ -272,15 +274,18 @@ void AccelSensor::processEvent(int code, int value)
     switch (code) {
         case ACC_EVENT_X :
             mPendingMask = 1;
-            mPendingEvent.acceleration.x = ACC_DATA_CONVERSION(value);
+            mPendingEvent.acceleration.y = -ACC_DATA_CONVERSION(value);
+			//ALOGE("x=%f\n", mPendingEvent.acceleration.x);
             break;
         case ACC_EVENT_Y :
             mPendingMask = 1;
-            mPendingEvent.acceleration.y = ACC_DATA_CONVERSION(value);
+            mPendingEvent.acceleration.x = -ACC_DATA_CONVERSION(value);
+			//ALOGE("y=%f\n", mPendingEvent.acceleration.y);
             break;
         case ACC_EVENT_Z :
             mPendingMask = 1;
-            mPendingEvent.acceleration.z = ACC_DATA_CONVERSION(value);
+            mPendingEvent.acceleration.z = -ACC_DATA_CONVERSION(value);
+			//ALOGE("z=%f\n", mPendingEvent.acceleration.z);
             break;
     }
 }
