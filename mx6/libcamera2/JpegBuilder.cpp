@@ -388,6 +388,7 @@ status_t JpegBuilder::prepareImage(const StreamBuffer *streamBuf)
     ret = mMetadaManager->getJpegRotation(jpegRotation);
     if (NO_ERROR == ret) {
         char str[16];
+		jpegRotation = (jpegRotation+90)%360;
         snprintf(str, sizeof(str), "%d", jpegRotation);
         const char *exif_orient =
             JpegBuilder::degreesToExifOrientation(str);
