@@ -652,10 +652,10 @@ int StreamAdapter::renderBuffer(StreamBuffer *buffer,  int isjpeg)
 
     GraphicBufferMapper& mapper = GraphicBufferMapper::get();
 	if (!isjpeg) {
-		FLOGE("render Buffer buffer->mSize = %d, %d\n", buffer->mSize, buffer->mWidth*buffer->mHeight*3/2);
-		FLOGE("render Buffer buffer->mSize = %d X %d\n", buffer->mWidth, buffer->mHeight);
+		//FLOGE("render Buffer buffer->mSize = %d, %d\n", buffer->mSize, buffer->mWidth*buffer->mHeight*3/2);
+		//FLOGE("render Buffer buffer->mSize = %d X %d\n", buffer->mWidth, buffer->mHeight);
     
-    	RotCameraData(buffer->mVirtAddr, buffer->mWidth, buffer->mHeight);
+    	//RotCameraData(buffer->mVirtAddr, buffer->mWidth, buffer->mHeight);
 		//memset(buffer->mVirtAddr, 0, 1024*10);
 	}
 	// unlock buffer before sending to stream
