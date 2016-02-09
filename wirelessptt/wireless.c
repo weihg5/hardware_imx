@@ -821,9 +821,9 @@ int main()
 			return -1;
 		}
 		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
+#if 0
 		if (len == sizeof(event))//have key changed
 			process_keybl();
-#if 0
 		if (event.code == 0x3c && event.value == 1){			
 			wireless_open = !wireless_open;
 			RFS_INFO("%s wireless\n", wireless_open?"open":"close");
@@ -833,10 +833,10 @@ int main()
 		if (event.code == KEY_F1 && event.value == 0){
 			send_cmd_wait_ack("AT+DMOCONNECT");
 		}
-		if (event.code == KEY_F2 && event.value == 1){
+		if (event.code == KEY_F5 && event.value == 1){
 			ticks = get_ticks();
 			RFS_INFO("ticks=%lld ms", ticks);
-		}else if (event.code == KEY_F2 && event.value == 0){
+		}else if (event.code == KEY_F5 && event.value == 0){
 			if (get_ticks() - ticks >= 2*1000) {
 				wireless_open = !wireless_open;
 				RFS_INFO("%s wireless\n", wireless_open?"open":"close");
@@ -845,7 +845,7 @@ int main()
 		}
 #endif
 		if (wireless_open ){
-			if (event.code == KEY_F3){
+			if (event.code == KEY_F6){
 				if (event.value == 1 && !wireless_speek) {
 					RFS_INFO("wireless speek mode\n");
 					set_speek_dir("SEND");
