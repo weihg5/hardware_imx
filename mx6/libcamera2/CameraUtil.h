@@ -96,13 +96,13 @@ using namespace android;
 
 #define CAMERA_GRALLOC_USAGE_JPEG GRALLOC_USAGE_HW_TEXTURE | \
     GRALLOC_USAGE_HW_RENDER |                           \
-    GRALLOC_USAGE_SW_READ_OFTEN |                      \
-    GRALLOC_USAGE_SW_WRITE_OFTEN
+    GRALLOC_USAGE_SW_READ_RARELY |                      \
+    GRALLOC_USAGE_SW_WRITE_NEVER
 
 #define CAMERA_GRALLOC_USAGE GRALLOC_USAGE_HW_TEXTURE | \
     GRALLOC_USAGE_HW_RENDER |                           \
-    GRALLOC_USAGE_SW_READ_OFTEN |                      \
-    GRALLOC_USAGE_SW_WRITE_OFTEN |                      \
+    GRALLOC_USAGE_SW_READ_RARELY |                      \
+    GRALLOC_USAGE_SW_WRITE_NEVER |                      \
     GRALLOC_USAGE_FORCE_CONTIGUOUS
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
