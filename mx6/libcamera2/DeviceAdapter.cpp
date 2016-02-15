@@ -312,7 +312,7 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
 		}
 	}
     status_t ret = NO_ERROR;
-    int input    = 1;
+    int input    = mCrop?0:1;
     ret = ioctl(mCameraHandle, VIDIOC_S_INPUT, &input);
     if (ret < 0) {
         FLOGE("Open: VIDIOC_S_INPUT Failed: %s", strerror(errno));
