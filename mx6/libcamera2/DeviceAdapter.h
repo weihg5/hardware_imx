@@ -162,7 +162,8 @@ protected:
     PixelFormat mPicturePixelFormat;
     PixelFormat mPreviewPixelFormat;
     sp<MetadaManager> mMetadaManager;
-
+	int mSensorPicSize[MAX_RESOLUTION_SIZE*2];
+	int mCrop;
 public:
 	int mCpuNum;
     unsigned char *mVPUPhyAddr[MAX_PREVIEW_BUFFER];

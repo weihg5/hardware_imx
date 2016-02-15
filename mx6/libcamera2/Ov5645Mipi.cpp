@@ -40,7 +40,7 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
 
     index = 0;
     char TmpStr[20];
-    int  previewCnt = 0, pictureCnt = 0;
+    int  previewCnt = 0, pictureCnt = 0, sensorCnt = 0;
     struct v4l2_frmsizeenum vid_frmsize;
     struct v4l2_frmivalenum vid_frmval;
     while (ret == 0) {
@@ -64,25 +64,67 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
                 	FLOG_RUNTIME("vid_frmval denominator:%d, numeraton:%d",vid_frmval.discrete.denominator,vid_frmval.discrete.numerator);
                 	if ((vid_frmsize.discrete.width > 1920) || (vid_frmsize.discrete.height > 1080)) 
 					{
-                   	 	vid_frmval.discrete.denominator = 15;
-                    	vid_frmval.discrete.numerator   = 1;
+                   	 	//vid_frmval.discrete.denominator = 15;
+                    	//vid_frmval.discrete.numerator   = 1;
+						mPictureResolutions[pictureCnt++] = 1080;
+                		mPictureResolutions[pictureCnt++] = 1920;
+                    	mPreviewResolutions[previewCnt++] = 1080;
+                    	mPreviewResolutions[previewCnt++] = 1920;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+						
+						mPictureResolutions[pictureCnt++] = 720;
+                		mPictureResolutions[pictureCnt++] = 1280;
+                    	mPreviewResolutions[previewCnt++] = 720;
+                    	mPreviewResolutions[previewCnt++] = 1280;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+						
+						mPictureResolutions[pictureCnt++] = 960;
+                		mPictureResolutions[pictureCnt++] = 1280;
+                    	mPreviewResolutions[previewCnt++] = 960;
+                    	mPreviewResolutions[previewCnt++] = 1280;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
                		}
-                	else 
+                	else if ((vid_frmsize.discrete.width == 1920) && (vid_frmsize.discrete.height == 1080)) 
 					{
-                    	vid_frmval.discrete.denominator = 30;
-                    	vid_frmval.discrete.numerator   = 1;
+                   	 	//vid_frmval.discrete.denominator = 15;
+                    	//vid_frmval.discrete.numerator   = 1;
+						mPictureResolutions[pictureCnt++] = 768;
+                		mPictureResolutions[pictureCnt++] = 1024;
+                    	mPreviewResolutions[previewCnt++] = 768;
+                    	mPreviewResolutions[previewCnt++] = 1024;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
                 	}
-				//	if(vid_frmval.width==1920 && vid_frmval.height==1080)
+                	else if ((vid_frmsize.discrete.width == 1280) && (vid_frmsize.discrete.height == 720)) 
 					{
-                		mPictureResolutions[pictureCnt++] = vid_frmsize.discrete.width;
-                		mPictureResolutions[pictureCnt++] = vid_frmsize.discrete.height;
+                   	 	//vid_frmval.discrete.denominator = 15;
+                    	//vid_frmval.discrete.numerator   = 1;
+						mPictureResolutions[pictureCnt++] = 480;
+                		mPictureResolutions[pictureCnt++] = 640;
+                    	mPreviewResolutions[previewCnt++] = 480;
+                    	mPreviewResolutions[previewCnt++] = 640;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+						
+						mPictureResolutions[pictureCnt++] = 480;
+                		mPictureResolutions[pictureCnt++] = 720;
+                    	mPreviewResolutions[previewCnt++] = 480;
+                    	mPreviewResolutions[previewCnt++] = 720;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+                	}
+					else 
+					{
+						mPictureResolutions[pictureCnt++] = 0;
+                		mPictureResolutions[pictureCnt++] = 0;
+                    	mPreviewResolutions[previewCnt++] = 0;
+                    	mPreviewResolutions[previewCnt++] = 0;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;						
 					}
-
-                	if (vid_frmval.discrete.denominator / vid_frmval.discrete.numerator > 15) 
-					{
-                    	mPreviewResolutions[previewCnt++] = vid_frmsize.discrete.width;
-                    	mPreviewResolutions[previewCnt++] = vid_frmsize.discrete.height;
-                	}
 				}
             }
         
@@ -116,6 +158,8 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
     mPhysicalWidth = 3.673f;
     mPhysicalHeight = 2.738f;
 
+	mCrop = 1;
+	
     return NO_ERROR;
 }
 
