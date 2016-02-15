@@ -294,25 +294,26 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
         FLOGE("setDeviceConfig: invalid parameters");
         return BAD_VALUE;
     }
+	crop_w = width;
+	crop_h = height;
 	if (mCrop) {
 		int i;
 		for (i=0; i<MAX_RESOLUTION_SIZE; i+=2){
-			if (mPictureResolutions[i] == 1080 || mPictureResolutions[i] == 720 || mPictureResolutions[i] == 960
-						|| mPictureResolutions[i] == 768 || mPictureResolutions[i] == 480){
+			if (mPictureResolutions[i] == width && mPictureResolutions[i+1] == height ){
 				idx = i;
 				break;
 			}
 		}
 		if (idx != -1){
-			crop_w = width;
-			crop_h = height;
-			width = mSensorPicSize[idx];
-			height = mSensorPicSize[idx+1];
-			FLOGE("ov5645 crop %dx%d to %dx%d", width, height, crop_w, crop_h);
+			//crop_w = width;
+			//crop_h = height;
+			crop_w = mSensorPicSize[idx];
+			crop_h = mSensorPicSize[idx+1];
+			FLOGE("ov5645_mipi crop %dx%d from %dx%d", width, height, crop_w, crop_h);
 		}
 	}
     status_t ret = NO_ERROR;
-    int input    = mCrop?0:1;
+    int input    = 1;//mCrop?0:1;
     ret = ioctl(mCameraHandle, VIDIOC_S_INPUT, &input);
     if (ret < 0) {
         FLOGE("Open: VIDIOC_S_INPUT Failed: %s", strerror(errno));
@@ -322,7 +323,7 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
     int vformat;
     vformat = convertPixelFormatToV4L2Format(format);
 
-    if ((width > 1920) || (height > 1080)) {
+    if ((crop_w > 1920) || (crop_h > 1080)) {
         fps = 15;
     }
     FLOGI("Width * Height %d x %d format 0x%x, fps: %d",
@@ -338,7 +339,7 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
     param.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.parm.capture.timeperframe.numerator   = 1;
     param.parm.capture.timeperframe.denominator = fps;
-    param.parm.capture.capturemode = getCaptureMode(width, height);
+    param.parm.capture.capturemode = getCaptureMode(crop_w, crop_h);
     ret = ioctl(mCameraHandle, VIDIOC_S_PARM, &param);
     if (ret < 0) {
         FLOGE("Open: VIDIOC_S_PARM Failed: %s", strerror(errno));
@@ -394,10 +395,10 @@ status_t DeviceAdapter::setDeviceConfig(int         width,
 	if (mCrop){
 		struct v4l2_crop crop;
 		crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		crop.c.top = (height-crop_h)/2;
-		crop.c.left = (width-crop_w)/2;
-		crop.c.width = crop_w;
-		crop.c.height = crop_h;
+		crop.c.top = (crop_h-height)/2;
+		crop.c.left = (crop_w-width)/2;
+		crop.c.width = width;
+		crop.c.height = height;
 		ret = ioctl(mCameraHandle, VIDIOC_S_CROP, &crop);
 		if(ret < 0)
 			FLOGE("set CROP error\n");

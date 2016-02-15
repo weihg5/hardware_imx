@@ -72,14 +72,14 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
                     	mPreviewResolutions[previewCnt++] = 1920;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
-						
+
 						mPictureResolutions[pictureCnt++] = 720;
                 		mPictureResolutions[pictureCnt++] = 1280;
                     	mPreviewResolutions[previewCnt++] = 720;
                     	mPreviewResolutions[previewCnt++] = 1280;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
-						
+
 						mPictureResolutions[pictureCnt++] = 960;
                 		mPictureResolutions[pictureCnt++] = 1280;
                     	mPreviewResolutions[previewCnt++] = 960;
@@ -97,7 +97,23 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
                     	mPreviewResolutions[previewCnt++] = 1024;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+
+						mPictureResolutions[pictureCnt++] = 480;
+						mPictureResolutions[pictureCnt++] = 640;
+						mPreviewResolutions[previewCnt++] = 480;
+						mPreviewResolutions[previewCnt++] = 640;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+
+						mPictureResolutions[pictureCnt++] = 480;
+						mPictureResolutions[pictureCnt++] = 720;
+						mPreviewResolutions[previewCnt++] = 480;
+						mPreviewResolutions[previewCnt++] = 720;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
+						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+
                 	}
+			#if 0
                 	else if ((vid_frmsize.discrete.width == 1280) && (vid_frmsize.discrete.height == 720)) 
 					{
                    	 	//vid_frmval.discrete.denominator = 15;
@@ -125,6 +141,7 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;						
 					}
+			#endif
 				}
             }
         
