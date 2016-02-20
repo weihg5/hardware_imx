@@ -622,7 +622,7 @@ static void set_audio_route(bool enable)
 #endif
 
 	if (enable) {
-		tinymix_command("MIXINR IN3R Switch", "1");
+		tinymix_command("MIXINR IN4R Switch", "1");
 #if RFS_DEBUG
 		tinymix_command("MIXINL IN2L Switch", "1");
 #endif
@@ -645,7 +645,7 @@ static void set_audio_route(bool enable)
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
 	} else {
-		tinymix_command("MIXINR IN3R Switch", "0");
+		tinymix_command("MIXINR IN4R Switch", "0");
 #if RFS_DEBUG
 		tinymix_command("MIXINL IN2L Switch", "0");
 #endif
