@@ -75,7 +75,9 @@
 #include <openssl/engine.h>
 #include <openssl/conf.h>
 #endif //ifdef SUPL_ENABLED
-
+#define MSG_UBX_LOG_OUTPUT
+#define MSG_NMEA_LOG_OUTPUT
+#define MSG_UNKNOWN_LOG_OUTPUT
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions & Types
 #define MAX_UDP_PACKET_LEN 16384    //!< Dimension of the temporary buffer for reading a complete UDP packet

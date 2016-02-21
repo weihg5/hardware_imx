@@ -9,7 +9,7 @@
 static void gpio_write(const char *gpio, int val)
 {
 	int fd = open(gpio, O_RDWR);
-	const char *v = val?"1":"0";
+	const char *v = val?"0":"1";
 	if (fd < 0)
 		return;
 
@@ -18,16 +18,17 @@ static void gpio_write(const char *gpio, int val)
 	close(fd);
 }
 
+static void gps_reset()
+{
+	gpio_write(GPS_RESET, 1);
+	usleep(1000*200);
+	gpio_write(GPS_RESET, 0);
+}
+
 static void gps_power(int on)
 {
 	gpio_write(GPS_POWER, on);
 }
 
 
-static void gps_reset()
-{
-	gpio_write(GPS_RESET, 0);
-	usleep(1000*20);
-	gpio_write(GPS_RESET, 1);
-}
 

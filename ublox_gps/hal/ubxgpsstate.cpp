@@ -1314,7 +1314,7 @@ bool CUbxGpsState::powerOn(void)
 	gps_power(1);
     UBX_LOG(LCAT_VERBOSE, "fsl gpio for power ON function");
 
-	return false;		// Return true if power was successfully turned on
+	return true;		// Return true if power was successfully turned on
 }
 
 //! Switch the power off to the receiver.
