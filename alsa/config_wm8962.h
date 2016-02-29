@@ -35,6 +35,8 @@
 #define WM8962_SPKOUTR_PGA                    "SPKOUTR PGA"
 #define WM8962_SPKOUTL_IN4L_SWITCH            "SPKOUTL Mixer IN4L Switch"
 #define WM8962_SPKOUTL_DACL_SWITCH            "SPKOUTL Mixer DACL Switch"
+#define WM8962_SPKOUTR_IN4L_SWITCH            "SPKOUTR Mixer IN4L Switch"
+#define WM8962_SPKOUTR_DACL_SWITCH            "SPKOUTR Mixer DACL Switch"
 
 #define WM8962_HEADPHONE_VOLUME               "Headphone Volume"
 #define WM8962_HEADPHONE_SWITCH               "Headphone Switch"
@@ -95,6 +97,10 @@ static struct route_setting speaker_output_wm8962[] = {
     },
 	{
 		.ctl_name = WM8962_SPKOUTL_DACL_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_DACL_SWITCH,
 		.intval = 1,
 	},
 	{
@@ -492,6 +498,10 @@ static struct route_setting audio_mode_normal_wm8962[] = {
 		.ctl_name = WM8962_SPKOUTL_IN4L_SWITCH,
 		.intval = 0,
 	},
+	{
+		.ctl_name = WM8962_SPKOUTR_IN4L_SWITCH,
+		.intval = 0,
+	},
     {
         .ctl_name = NULL,
     },
@@ -508,6 +518,10 @@ static struct route_setting audio_mode_incall_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_SPKOUTL_IN4L_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_IN4L_SWITCH,
 		.intval = 1,
 	},
     {
