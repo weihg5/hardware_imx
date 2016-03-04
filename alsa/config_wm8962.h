@@ -29,6 +29,7 @@
 #define WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
 
 #define WM8962_SPEAKER_VOLUME                 "Speaker Volume"
+#define WM8962_SPEAKER_VOLUME_VALUE           127
 #define WM8962_SPEAKER_SWITCH                 "Speaker Switch"
 #define WM8962_SPEAKER_MIXER_SWITCH           "Speaker Mixer Switch"
 #define WM8962_SPKOUTL_PGA                    "SPKOUTL PGA"
@@ -39,6 +40,7 @@
 #define WM8962_SPKOUTR_DACL_SWITCH            "SPKOUTR Mixer DACL Switch"
 
 #define WM8962_HEADPHONE_VOLUME               "Headphone Volume"
+#define WM8962_HEADPHONE_VOLUME_VALUE         121
 #define WM8962_HEADPHONE_SWITCH               "Headphone Switch"
 #define WM8962_HEADPHONE_MIXER_SWITCH         "Headphone Mixer Switch"
 #define WM8962_HPOUTL_PGA                     "HPOUTL PGA"
@@ -93,7 +95,7 @@ static struct route_setting speaker_output_wm8962[] = {
     },
     {
         .ctl_name = WM8962_SPEAKER_VOLUME,
-        .intval = 121,
+        .intval = WM8962_SPEAKER_VOLUME_VALUE,
     },
 	{
 		.ctl_name = WM8962_SPKOUTL_DACL_SWITCH,
@@ -122,7 +124,7 @@ static struct route_setting speaker_output_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 	{
 		.ctl_name = WM8962_HPMIXL_DACL_SWITCH,
@@ -149,7 +151,7 @@ static struct route_setting hs_output_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 	{
 		.ctl_name = WM8962_HPMIXL_DACL_SWITCH,
@@ -229,7 +231,7 @@ static struct route_setting vx_hs_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 #endif
     {
@@ -305,7 +307,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 #endif
     {
@@ -369,7 +371,7 @@ static struct route_setting vx_main_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 #endif
     {
@@ -471,7 +473,7 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = 121,
+        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
 #endif
     {
