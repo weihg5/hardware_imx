@@ -48,8 +48,9 @@
 
 #include <dirent.h>
 
-#define RFS_AUDIO_DEBUG	1
-#define RFS_USE_IN4R	1
+#define RFS_AUDIO_DEBUG        1
+#define RFS_USE_IN4R   1
+
 
 #define W_SYSFS_SIZE 256
 
@@ -141,6 +142,7 @@ static void set_speek_dir(char *dir)
 		RFS_ERR("dir %s error!!!", dir);
 		return;
 	}
+	RFS_ERR("speekdir val=%c\n", val);
 	sval = (int)val;
 	if (write(fd, &sval, 4) != 4)
 		RFS_ERR("write file %s Error\n", PTT_SYSFS);
@@ -156,7 +158,7 @@ static void set_power(char *power)
 		RFS_ERR("open file %s Error\n", HL_SYSFS);
 		return;
 	}	
-	if (!memcmp(power, "LOW", 4)){
+	if (!memcmp(power, "LOW", 3)){
 		val = '0';
 	}else if (!memcmp(power, "HIGH", 4)){
 		val = '1';
@@ -164,6 +166,7 @@ static void set_power(char *power)
 		RFS_ERR("power %s error!!!", power);
 		return;
 	}
+	RFS_ERR("power val=%c\n", val);
 	sval = (int)val;
 	if (write(fd, &sval, 4) != 4)
 		RFS_ERR("write file %s Error\n", HL_SYSFS);
@@ -180,7 +183,7 @@ static void set_sleep(char *sleep)
 		RFS_ERR("open file %s Error\n", PD_SYSFS);
 		return;
 	}	
-	if (!memcmp(sleep, "SLEEP", 4)){
+	if (!memcmp(sleep, "SLEEP", 5)){
 		val = '0';
 	}else if (!memcmp(sleep, "WAKE", 4)){
 		val = '1';
@@ -188,6 +191,7 @@ static void set_sleep(char *sleep)
 		RFS_ERR("sleep %s error!!!", sleep);
 		return;
 	}
+	RFS_ERR("sleep val=%c\n", val);
 	sval = (int)val;
 	if (write(fd, &sval, 4) != 4)
 		RFS_ERR("write file %s Error\n", PD_SYSFS);
@@ -204,15 +208,16 @@ static void set_sqiut(char *sq)
 		RFS_ERR("open file %s Error\n", SQ_SYSFS);
 		return;
 	}	
-	if (!memcmp(sq, "ON", 4)){
-		val = '0';
-	}else if (!memcmp(sq, "OFF", 4)){
+	if (!memcmp(sq, "ON", 2)){
 		val = '1';
+	}else if (!memcmp(sq, "OFF", 3)){
+		val = '0';
 	}else {
 		RFS_ERR("sq %s error!!!", sq);
 		return;
 	}
 	sval = (int)val;
+	RFS_ERR("sq val=%c\n", val);
 	if (write(fd, &sval, 4) != 4)
 		RFS_ERR("write file %s Error\n", SQ_SYSFS);
 
@@ -626,19 +631,16 @@ static void set_audio_route(bool enable)
 #if RFS_USE_IN4R
 		tinymix_command("HPMIXL IN4R Switch", "1");
 		tinymix_command("SPKOUTL Mixer IN4R Switch", "1");
-		tinymix_command("SPKOUTR Mixer IN4R Switch", "1");
 #else
 		tinymix_command("MIXINR IN3R Switch", "1");
 		tinymix_command("HPMIXL MIXINR Switch", "1");
 		tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
-		tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
 #endif
 
 #if RFS_AUDIO_DEBUG
 		tinymix_command("MIXINL IN2L Switch", "1");
 		tinymix_command("HPMIXL MIXINL Switch", "1");
 		tinymix_command("SPKOUTL Mixer MIXINL Switch", "1");
-		tinymix_command("SPKOUTR Mixer MIXINL Switch", "1");
 #endif
 
 		tinymix_command("HPOUTL PGA", "Mixer");
@@ -647,7 +649,6 @@ static void set_audio_route(bool enable)
 		tinymix_command("Headphone Switch", "1");
 
 		tinymix_command("SPKOUTL PGA", "Mixer");
-		tinymix_command("SPKOUTR PGA", "Mixer");
 		tinymix_command("Speaker Mixer Switch", "1");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
@@ -655,12 +656,10 @@ static void set_audio_route(bool enable)
 #if RFS_USE_IN4R
 		tinymix_command("HPMIXL IN4R Switch", "0");
 		tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
-		tinymix_command("SPKOUTR Mixer IN4R Switch", "0");
 #else
 		tinymix_command("MIXINR IN3R Switch", "0");
 		tinymix_command("HPMIXL MIXINR Switch", "0");
 		tinymix_command("SPKOUTL Mixer MIXINR Switch", "0");
-		tinymix_command("SPKOUTR Mixer MIXINR Switch", "0");
 #endif
 
 #if RFS_AUDIO_DEBUG
@@ -669,7 +668,10 @@ static void set_audio_route(bool enable)
 
 		tinymix_command("Headphone Mixer Switch", "0");
 		tinymix_command("Headphone Mixer Switch", "0");
+		tinymix_command("HPOUTL PGA", "DAC");
+
 		tinymix_command("Speaker Mixer Switch", "0");
+		tinymix_command("SPKOUTL PGA", "DAC");
 		// tinymix_command("Headphone Volume", "0");
 		// tinymix_command("Headphone Switch", "0");
 	}
@@ -763,12 +765,23 @@ static int init()
 #endif	
 	return 0;
 }
+static void set_send_mode(int send)
+{
+	if (send){
+		set_speek_dir("SEND");
+		set_sqiut("ON");
+	}else{
+		set_speek_dir("RECV");
+		set_sqiut("OFF");
+	}
+}
 
 static void open_wireless(int open)
 {
 	if (open){		
 		set_power("HIGH");
 		set_sleep("WAKE");
+		set_send_mode(0);
 		set_audio_route(true);
 	}else{
 		set_power("LOW");
@@ -790,6 +803,8 @@ static void process_keybl()
 
 	close(fd);
 }
+
+
 int main()
 {
 	struct input_event event;
@@ -825,7 +840,7 @@ int main()
 	
 
 	init();
-	set_speek_dir("RECV");//default is listen
+	//set_speek_dir("RECV");//default is listen
 	while(1){
 		len = read(fd, &event, sizeof(event));
 		if (len <= 0){
@@ -833,9 +848,9 @@ int main()
 			return -1;
 		}
 		RFS_INFO("read type=%d, code=0x%x, value=%d\n", event.type, event.code, event.value);
+#if 0
 		if (len == sizeof(event))//have key changed
 			process_keybl();
-#if 0
 		if (event.code == 0x3c && event.value == 1){			
 			wireless_open = !wireless_open;
 			RFS_INFO("%s wireless\n", wireless_open?"open":"close");
@@ -844,11 +859,13 @@ int main()
 #else
 		if (event.code == KEY_F1 && event.value == 0){
 			send_cmd_wait_ack("AT+DMOCONNECT");
+			send_cmd_wait_ack("AT+DMOSETGROUP=0,409.7500,409.7500,1,2,1,1");
+			//send_cmd_wait_ack("AT+DMOSETMIC=8,0,0");
 		}
-		if (event.code == KEY_F2 && event.value == 1){
+		if (event.code == KEY_F5 && event.value == 1){
 			ticks = get_ticks();
 			RFS_INFO("ticks=%lld ms", ticks);
-		}else if (event.code == KEY_F2 && event.value == 0){
+		}else if (event.code == KEY_F5 && event.value == 0){
 			if (get_ticks() - ticks >= 2*1000) {
 				wireless_open = !wireless_open;
 				RFS_INFO("%s wireless\n", wireless_open?"open":"close");
@@ -857,14 +874,16 @@ int main()
 		}
 #endif
 		if (wireless_open ){
-			if (event.code == KEY_F3){
+			if (event.code == KEY_F6){
 				if (event.value == 1 && !wireless_speek) {
 					RFS_INFO("wireless speek mode\n");
-					set_speek_dir("SEND");
+					//set_speek_dir("SEND");
+					set_send_mode(1);
 					wireless_speek = 1;
 				}else if (event.value == 0 && wireless_speek){
 					RFS_INFO("wireless listen mode\n");
-					set_speek_dir("RECV");
+					//set_speek_dir("RECV");
+					set_send_mode(0);
 					wireless_speek = 0;
 				}
 			}
