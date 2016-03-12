@@ -91,12 +91,19 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
 					{
                    	 	//vid_frmval.discrete.denominator = 15;
                     	//vid_frmval.discrete.numerator   = 1;
+
 						mPictureResolutions[pictureCnt++] = 768;
                 		mPictureResolutions[pictureCnt++] = 1024;
                     	mPreviewResolutions[previewCnt++] = 768;
                     	mPreviewResolutions[previewCnt++] = 1024;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
+
+                	}
+                	else if ((vid_frmsize.discrete.width == 1024) && (vid_frmsize.discrete.height == 768)) 
+					{
+                   	 	//vid_frmval.discrete.denominator = 15;
+                    	//vid_frmval.discrete.numerator   = 1;
 
 						mPictureResolutions[pictureCnt++] = 480;
 						mPictureResolutions[pictureCnt++] = 640;
@@ -110,38 +117,8 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
 						mPreviewResolutions[previewCnt++] = 480;
 						mPreviewResolutions[previewCnt++] = 720;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
-
-                	}
-			#if 0
-                	else if ((vid_frmsize.discrete.width == 1280) && (vid_frmsize.discrete.height == 720)) 
-					{
-                   	 	//vid_frmval.discrete.denominator = 15;
-                    	//vid_frmval.discrete.numerator   = 1;
-						mPictureResolutions[pictureCnt++] = 480;
-                		mPictureResolutions[pictureCnt++] = 640;
-                    	mPreviewResolutions[previewCnt++] = 480;
-                    	mPreviewResolutions[previewCnt++] = 640;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
-						
-						mPictureResolutions[pictureCnt++] = 480;
-                		mPictureResolutions[pictureCnt++] = 720;
-                    	mPreviewResolutions[previewCnt++] = 480;
-                    	mPreviewResolutions[previewCnt++] = 720;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;
-                	}
-					else 
-					{
-						mPictureResolutions[pictureCnt++] = 0;
-                		mPictureResolutions[pictureCnt++] = 0;
-                    	mPreviewResolutions[previewCnt++] = 0;
-                    	mPreviewResolutions[previewCnt++] = 0;
-						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.width;
 						mSensorPicSize[sensorCnt++] = vid_frmsize.discrete.height;						
-					}
-			#endif
+                	}
 				}
             }
         
