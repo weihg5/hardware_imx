@@ -37,6 +37,7 @@
 
 #include <linux/input.h>
 
+#include <cutils/properties.h>
 
 #ifdef _ANDROID
 #include <asm-generic/termbits.h>
@@ -48,9 +49,9 @@
 
 #include <dirent.h>
 
-#define RFS_AUDIO_DEBUG        1
+#define RFS_AUDIO_DEBUG        0
 #define RFS_USE_IN4R   1
-
+#define USE_PGA   1
 
 #define W_SYSFS_SIZE 256
 
@@ -517,7 +518,7 @@ void send_cmd_wait_ack(char *buf)
 		RFS_ERR("tty send failt, ret=%d\n", ret);
 		return;
 	}
-	msleep(1000);
+	msleep(200);
 	do {
 		ret = read(dev_fd, rbuf+recv_num, 1);
 		if (ret==1){
@@ -620,6 +621,40 @@ static bool tinymix_command(const char *control, const char *value)
 	return system_format("/system/bin/tinymix '%s' '%s'", control, value);
 }
 
+#if USE_PGA
+static void set_audio_route(bool enable)
+{
+
+	if (enable) {
+
+		tinymix_command("Capture Switch", "1");
+		tinymix_command("Capture Volume", "40");
+		tinymix_command("INPGAR IN4R Switch", "1");
+		tinymix_command("MIXINR PGA Switch" , "1");
+
+		tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
+		tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
+
+		tinymix_command("SPKOUTL PGA", "Mixer");
+		tinymix_command("SPKOUTR PGA", "Mixer");
+
+		tinymix_command("Speaker Mixer Switch", "1");
+		tinymix_command("Speaker Switch", "1");
+		tinymix_command("Speaker Volume", "121");
+	} else {
+		tinymix_command("INPGAR IN4R Switch", "0");
+		tinymix_command("MIXINR PGA Switch" , "0");
+
+		tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
+		tinymix_command("SPKOUTR Mixer IN4R Switch", "0");
+
+		tinymix_command("Speaker Mixer Switch", "0");
+		tinymix_command("SPKOUTL PGA", "DAC");
+		// tinymix_command("Headphone Volume", "0");
+		// tinymix_command("Headphone Switch", "0");
+	}
+}
+#else
 static void set_audio_route(bool enable)
 {
 	tinymix_command("MIXINR PGA Switch", "0");
@@ -631,6 +666,7 @@ static void set_audio_route(bool enable)
 #if RFS_USE_IN4R
 		tinymix_command("HPMIXL IN4R Switch", "1");
 		tinymix_command("SPKOUTL Mixer IN4R Switch", "1");
+		tinymix_command("SPKOUTR Mixer IN4R Switch", "1");
 #else
 		tinymix_command("MIXINR IN3R Switch", "1");
 		tinymix_command("HPMIXL MIXINR Switch", "1");
@@ -649,6 +685,7 @@ static void set_audio_route(bool enable)
 		tinymix_command("Headphone Switch", "1");
 
 		tinymix_command("SPKOUTL PGA", "Mixer");
+		tinymix_command("SPKOUTR PGA", "Mixer");
 		tinymix_command("Speaker Mixer Switch", "1");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
@@ -656,6 +693,7 @@ static void set_audio_route(bool enable)
 #if RFS_USE_IN4R
 		tinymix_command("HPMIXL IN4R Switch", "0");
 		tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
+		tinymix_command("SPKOUTR Mixer IN4R Switch", "0");
 #else
 		tinymix_command("MIXINR IN3R Switch", "0");
 		tinymix_command("HPMIXL MIXINR Switch", "0");
@@ -676,6 +714,7 @@ static void set_audio_route(bool enable)
 		// tinymix_command("Headphone Switch", "0");
 	}
 }
+#endif
 
 /*****************************************************************************/
 static int wireless_open = 0;
@@ -784,9 +823,9 @@ static void open_wireless(int open)
 		set_send_mode(0);
 		set_audio_route(true);
 	}else{
+		set_audio_route(false);
 		set_power("LOW");
 		set_sleep("SLEEP");
-		set_audio_route(false);
 	}
 }
 #define KEYBOARD_BL "/sys/class/timed_output/key_bl/enable"
@@ -813,6 +852,7 @@ int main()
 	char *keyboard="/dev/input/event";
 	char kb_name[128];
 	char buffer[32];
+	char vol_cmd[32];
 	int i;
 	int fd;
 	memset(kb_name, 0, 128);
@@ -857,10 +897,20 @@ int main()
 			open_wireless(wireless_open);
 		}
 #else
+		if (wireless_open){
+			char prop[PROPERTY_VALUE_MAX];
+			memset(prop, 0, sizeof(prop));
+			memset(vol_cmd, 0, sizeof(vol_cmd));
+			property_get("ppt.vol", prop, "8");
+			RFS_INFO("ppt.vol=%s\n", prop);
+			sprintf(vol_cmd, "AT+DMOSETVOLUME=%s", prop);
+			RFS_INFO("vol_cmd=%s\n", vol_cmd);
+		}
 		if (event.code == KEY_F1 && event.value == 0){
 			send_cmd_wait_ack("AT+DMOCONNECT");
 			send_cmd_wait_ack("AT+DMOSETGROUP=0,409.7500,409.7500,1,2,1,1");
-			//send_cmd_wait_ack("AT+DMOSETMIC=8,0,0");
+			send_cmd_wait_ack("AT+DMOSETMIC=8,0,0");
+			send_cmd_wait_ack("AT+DMOSETVOLUME=9");
 		}
 		if (event.code == KEY_F5 && event.value == 1){
 			ticks = get_ticks();
