@@ -642,6 +642,7 @@ static void set_audio_route(bool enable)
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
 	} else {
+		tinymix_command("Speaker Switch", "0");
 		tinymix_command("INPGAR IN4R Switch", "0");
 		tinymix_command("MIXINR PGA Switch" , "0");
 
@@ -650,6 +651,8 @@ static void set_audio_route(bool enable)
 
 		tinymix_command("Speaker Mixer Switch", "0");
 		tinymix_command("SPKOUTL PGA", "DAC");
+		tinymix_command("SPKOUTR PGA", "DAC");
+		tinymix_command("Speaker Switch", "1");
 		// tinymix_command("Headphone Volume", "0");
 		// tinymix_command("Headphone Switch", "0");
 	}
@@ -821,6 +824,7 @@ static void open_wireless(int open)
 		set_power("HIGH");
 		set_sleep("WAKE");
 		set_send_mode(0);
+		msleep(200);
 		set_audio_route(true);
 	}else{
 		set_audio_route(false);
