@@ -21,6 +21,10 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := audio.primary.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
+
+ifeq ($(BOARD_MODEM_VENDOR), EC20)
+LOCAL_CFLAGS += -DMODEM_EC20
+endif
 LOCAL_SRC_FILES := tinyalsa_hal.c
 LOCAL_C_INCLUDES += \
 	external/tinyalsa/include \

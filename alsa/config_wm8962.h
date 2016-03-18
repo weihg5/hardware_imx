@@ -509,11 +509,10 @@ static struct route_setting audio_mode_normal_wm8962[] = {
     },
 };
 
+
+
+#ifdef MODEM_EC20
 static struct route_setting audio_mode_incall_wm8962[] = {
-    {
-        .ctl_name = WM8962_AUDIO_MODE,
-        .strval = WM8962_AUDIO_MODE_CALL,
-    },
 	{
 		.ctl_name = WM8962_HPMIXL_IN4L_SWITCH,
 		.intval = 1,
@@ -530,6 +529,20 @@ static struct route_setting audio_mode_incall_wm8962[] = {
         .ctl_name = NULL,
     },
 };
+
+#else
+static struct route_setting audio_mode_incall_wm8962[] = {
+    {
+        .ctl_name = WM8962_AUDIO_MODE,
+        .strval = WM8962_AUDIO_MODE_CALL,
+    },
+    {
+        .ctl_name = NULL,
+    },
+};
+
+#endif
+
 
 /* ALSA cards for IMX, these must be defined according different board / kernel config*/
 static struct audio_card  wm8962_card = {
