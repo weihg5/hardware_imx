@@ -320,7 +320,7 @@ static int cavan_set_audio_mode(struct imx_audio_device *adev, int mode)
 
 static int cavan_check_audio_mode(struct imx_audio_device *adev)
 {
-#ifdef MIXER_WM8962_AUDIO_MODE
+#ifdef WM8962_AUDIO_MODE
 	if (adev->mode == AUDIO_MODE_IN_CALL) {
 		return -EBUSY;
 	}
