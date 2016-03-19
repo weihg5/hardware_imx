@@ -370,6 +370,54 @@ static void select_mode(struct imx_audio_device *adev)
     cavan_set_audio_mode(adev, adev->mode); // Add By Fuang.Cao 2016-01-09
 }
 
+
+
+static void update_earpiece_volume(struct imx_audio_device *adev)
+{
+	unsigned int i, j;
+	int val;
+
+	val = MAX_OUT_VOLUME * adev->voice_volume;
+	ALOGW("update_earpiece_volume=%d\n", val);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], WM8962_HEADPHONE_VOLUME);
+		if (ctl) {
+            for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
+            	mixer_ctl_set_value(ctl, j, val);
+            }
+
+		}
+    }
+}
+
+static void update_speek_volume(struct imx_audio_device *adev)
+{
+	unsigned int i, j;
+	int val;
+
+	val = MAX_OUT_VOLUME * adev->voice_volume;
+	ALOGW("update_speek_volume=%d\n", val);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], WM8962_SPEAKER_VOLUME);
+		if (ctl) {
+            for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
+            	mixer_ctl_set_value(ctl, j, val);
+            }
+
+		}
+    }
+}
+
+static void update_voice_volume(struct imx_audio_device *adev)
+{
+	if (adev->out_device & AUDIO_DEVICE_OUT_EARPIECE)
+		update_earpiece_volume(adev);
+	if(adev->out_device & AUDIO_DEVICE_OUT_SPEAKER)
+		update_speek_volume(adev);
+}
+
+
+
 static void select_output_device(struct imx_audio_device *adev)
 {
     int headset_on;
@@ -386,7 +434,7 @@ static void select_output_device(struct imx_audio_device *adev)
     speaker_on      = adev->out_device & AUDIO_DEVICE_OUT_SPEAKER;
     earpiece_on     = adev->out_device & AUDIO_DEVICE_OUT_EARPIECE;
     bt_on           = adev->out_device & AUDIO_DEVICE_OUT_ALL_SCO;
-
+	ALOGW("adev->tty_mode=%d\n", adev->tty_mode);
     /* force rx path according to TTY mode when in call */
     if (adev->mode == AUDIO_MODE_IN_CALL && !bt_on) {
         switch(adev->tty_mode) {
@@ -416,7 +464,7 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGV("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGW("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);
@@ -3041,14 +3089,15 @@ static int adev_init_check(const struct audio_hw_device *dev)
 static int adev_set_voice_volume(struct audio_hw_device *dev, float volume)
 {
     struct imx_audio_device *adev = (struct imx_audio_device *)dev;
-
+	ALOGW("adev_set_voice_volume=%f", volume);
     adev->voice_volume = volume;
-
+	update_voice_volume(adev);
     return 0;
 }
 
 static int adev_set_master_volume(struct audio_hw_device *dev, float volume)
 {
+	ALOGW("adev_set_master_volume=%f", volume);
     return -ENOSYS;
 }
 
