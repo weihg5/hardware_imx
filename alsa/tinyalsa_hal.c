@@ -371,49 +371,30 @@ static void select_mode(struct imx_audio_device *adev)
 }
 
 
-
-static void update_earpiece_volume(struct imx_audio_device *adev)
+static void update_out_volume(struct imx_audio_device *adev, char *outctl, int volume)
 {
 	unsigned int i, j;
-	int val;
-
-	val = MAX_OUT_VOLUME * adev->voice_volume;
-	ALOGW("update_earpiece_volume=%d\n", val);
+	ALOGW("update_out_volume=%d\n", volume);
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
-		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], WM8962_HEADPHONE_VOLUME);
+		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], outctl);
 		if (ctl) {
             for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
-            	mixer_ctl_set_value(ctl, j, val);
+				mixer_ctl_set_value(ctl, j, volume);
             }
-
-		}
-    }
-}
-
-static void update_speek_volume(struct imx_audio_device *adev)
-{
-	unsigned int i, j;
-	int val;
-
-	val = MAX_OUT_VOLUME * adev->voice_volume;
-	ALOGW("update_speek_volume=%d\n", val);
-    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
-		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], WM8962_SPEAKER_VOLUME);
-		if (ctl) {
-            for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
-            	mixer_ctl_set_value(ctl, j, val);
-            }
-
 		}
     }
 }
 
 static void update_voice_volume(struct imx_audio_device *adev)
 {
+	int val;
+
+	val = MIN_OUT_VOLUME +((MAX_OUT_VOLUME-MIN_OUT_VOLUME) * adev->voice_volume);
+
 	if (adev->out_device & AUDIO_DEVICE_OUT_EARPIECE)
-		update_earpiece_volume(adev);
+		update_out_volume(adev, WM8962_HEADPHONE_VOLUME, val);
 	if(adev->out_device & AUDIO_DEVICE_OUT_SPEAKER)
-		update_speek_volume(adev);
+		update_out_volume(adev, WM8962_SPEAKER_VOLUME, val);
 }
 
 

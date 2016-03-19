@@ -23,7 +23,7 @@
 #define WM8962_DEBUG	0
 
 #define MAX_OUT_VOLUME 127
-
+#define MIN_OUT_VOLUME 100
 #define WM8962_AUDIO_MODE                     "AudioMode"
 #define WM8962_AUDIO_MODE_MUSIC               "SlaveMusic"
 #define WM8962_AUDIO_MODE_CALL                "SlaveCall"
