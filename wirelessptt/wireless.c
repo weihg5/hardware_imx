@@ -626,7 +626,6 @@ static void set_audio_route(bool enable)
 {
 
 	if (enable) {
-
 		tinymix_command("Capture Switch", "1");
 		tinymix_command("Capture Volume", "40");
 		tinymix_command("INPGAR IN4R Switch", "1");
@@ -641,7 +640,13 @@ static void set_audio_route(bool enable)
 		tinymix_command("Speaker Mixer Switch", "1");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
+
+		tinymix_command("RADIO_OUT Switch", "1");
+		tinymix_command("Speaker Jack Switch", "1");
 	} else {
+		tinymix_command("Speaker Jack Switch", "0");
+		tinymix_command("RADIO_OUT Switch", "0");
+
 		tinymix_command("Speaker Switch", "0");
 		tinymix_command("INPGAR IN4R Switch", "0");
 		tinymix_command("MIXINR PGA Switch" , "0");
@@ -652,7 +657,7 @@ static void set_audio_route(bool enable)
 		tinymix_command("Speaker Mixer Switch", "0");
 		tinymix_command("SPKOUTL PGA", "DAC");
 		tinymix_command("SPKOUTR PGA", "DAC");
-		tinymix_command("Speaker Switch", "1");
+		tinymix_command("Speaker Switch", "0");
 		// tinymix_command("Headphone Volume", "0");
 		// tinymix_command("Headphone Switch", "0");
 	}
@@ -692,7 +697,13 @@ static void set_audio_route(bool enable)
 		tinymix_command("Speaker Mixer Switch", "1");
 		tinymix_command("Speaker Switch", "1");
 		tinymix_command("Speaker Volume", "121");
+
+		tinymix_command("RADIO_OUT Switch", "1");
+		tinymix_command("Speaker Jack Switch", "1");
 	} else {
+		tinymix_command("Speaker Jack Switch", "0");
+		tinymix_command("RADIO_OUT Switch", "0");
+
 #if RFS_USE_IN4R
 		tinymix_command("HPMIXL IN4R Switch", "0");
 		tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
