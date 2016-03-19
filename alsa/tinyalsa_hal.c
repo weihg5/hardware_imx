@@ -261,20 +261,31 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
         if (!ctl)
             return -EINVAL;
 
+        /* Modify By Fuang.Cao 2016-03-19 */
         if (route[i].strval) {
-            if (enable)
-                mixer_ctl_set_enum_by_string(ctl, route[i].strval);
-            else
-                mixer_ctl_set_enum_by_string(ctl, "Off");
+            const char *strval;
+
+            if (enable) {
+                strval = route[i].strval;
+            } else if (route[i].stroff) {
+                strval = route[i].stroff;
+            } else {
+                strval = "Off";
+            }
+
+            ALOGD("%s => %s", route[i].ctl_name, strval);
+            mixer_ctl_set_enum_by_string(ctl, strval);
         } else {
+            int intval = enable ? route[i].intval : 0;
+
+            ALOGD("%s => %d", route[i].ctl_name, intval);
+
             /* This ensures multiple (i.e. stereo) values are set jointly */
             for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
-                if (enable)
-                    mixer_ctl_set_value(ctl, j, route[i].intval);
-                else
-                    mixer_ctl_set_value(ctl, j, 0);
+                mixer_ctl_set_value(ctl, j, intval);
             }
         }
+        /* End modify */
         i++;
     }
 
@@ -389,6 +400,7 @@ static void select_output_device(struct imx_audio_device *adev)
 
     /* force rx path according to TTY mode when in call */
     if (adev->mode == AUDIO_MODE_IN_CALL && !bt_on) {
+        ALOGD("tty_mode = %d\n", adev->tty_mode);
         switch(adev->tty_mode) {
             case TTY_MODE_FULL:
             case TTY_MODE_VCO:
@@ -416,7 +428,7 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGV("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGD("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);

@@ -53,6 +53,7 @@ struct route_setting
     char *ctl_name;
     int intval;
     char *strval;
+    char *stroff; // Add By Fuang.Cao 2016-03-19
 };
 
 
