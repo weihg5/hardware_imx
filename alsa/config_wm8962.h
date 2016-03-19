@@ -22,6 +22,9 @@
 
 #define WM8962_DEBUG	0
 
+#define MAX_OUT_VOLUME 127
+#define MIN_OUT_VOLUME 100
+
 #define WM8962_AUDIO_MODE                     "AudioMode"
 #define WM8962_AUDIO_MODE_MUSIC               "SlaveMusic"
 #define WM8962_AUDIO_MODE_CALL                "SlaveCall"
@@ -43,11 +46,13 @@
 #define WM8962_SPKOUTR_PGA                    "SPKOUTR PGA"
 #define WM8962_SPKOUTL_IN4L_SWITCH            "SPKOUTL Mixer IN4L Switch"
 #define WM8962_SPKOUTL_DACL_SWITCH            "SPKOUTL Mixer DACL Switch"
+#define WM8962_SPKOUTL_MIXINL_SWITCH          "SPKOUTL Mixer MIXINL Switch"
 #define WM8962_SPKOUTR_IN4L_SWITCH            "SPKOUTR Mixer IN4L Switch"
 #define WM8962_SPKOUTR_DACL_SWITCH            "SPKOUTR Mixer DACL Switch"
+#define WM8962_SPKOUTR_MIXINL_SWITCH          "SPKOUTR Mixer MIXINL Switch"
 
 #define WM8962_HEADPHONE_VOLUME               "Headphone Volume"
-#define WM8962_HEADPHONE_VOLUME_VALUE         121
+#define WM8962_HEADPHONE_VOLUME_VALUE         120
 #define WM8962_HEADPHONE_SWITCH               "Headphone Switch"
 #define WM8962_HEADPHONE_MIXER_SWITCH         "Headphone Mixer Switch"
 #define WM8962_HPOUTL_PGA                     "HPOUTL PGA"
@@ -72,11 +77,17 @@
 #define WM8962_MIXINL_PGA_SWITCH              "MIXINL PGA Switch"
 #define WM8962_MIXINL_PGA_VOLUME              "MIXINL PGA Volume"
 
+#ifdef MODEM_EC20
+#define WM8962_MIXINL_PGA_VALUE               1
+#else
+#define WM8962_MIXINL_PGA_VALUE               0
+#endif
+
 #define WM8962_DIGITAL_CAPTURE_VOLUME         "Digital Capture Volume"
 
 #define WM8962_DIGITAL_PLAYBACK_VOLUME        "Digital Playback Volume"
-
-
+#define WM8962_INPGAL_IN4L_SWITCH             "INPGAL IN4L Switch"
+#define WM8962_HPMIXL_MIXINL_SWITCH           "HPMIXL MIXINL Switch"
 /* These are values that never change */
 static struct route_setting defaults_wm8962[] = {
     /* general */
@@ -274,7 +285,7 @@ static struct route_setting vx_hs_mic_input_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = 0,
+		.intval = WM8962_MIXINL_PGA_VALUE,
 	},
 #endif
 #if 0 // WM8962_DEBUG
@@ -350,7 +361,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = 0,
+		.intval = WM8962_MIXINL_PGA_VALUE,
 	},
 #endif
 #if 0 // WM8962_DEBUG
@@ -414,7 +425,7 @@ static struct route_setting vx_main_mic_input_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = 0,
+		.intval = WM8962_MIXINL_PGA_VALUE,
 	},
 #endif
 #if 0 // WM8962_DEBUG
@@ -516,7 +527,7 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = 0,
+		.intval = WM8962_MIXINL_PGA_VALUE,
 	},
 #endif
 #if 0 // WM8962_DEBUG
@@ -561,6 +572,24 @@ static struct route_setting audio_mode_normal_wm8962[] = {
         .ctl_name = WM8962_AUDIO_MODE,
         .strval = WM8962_AUDIO_MODE_MUSIC,
     },
+#if WM8962_MIXINL_PGA_VALUE
+	{
+		.ctl_name = WM8962_INPGAL_IN4L_SWITCH,
+		.intval = 0,
+	},
+	{
+		.ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
+		.intval = 0,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTL_MIXINL_SWITCH,
+		.intval = 0,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_MIXINL_SWITCH,
+		.intval = 0,
+	},
+#else
 	{
 		.ctl_name = WM8962_HPMIXL_IN4L_SWITCH,
 		.intval = 0,
@@ -573,12 +602,31 @@ static struct route_setting audio_mode_normal_wm8962[] = {
 		.ctl_name = WM8962_SPKOUTR_IN4L_SWITCH,
 		.intval = 0,
 	},
+#endif
     {
         .ctl_name = NULL,
     },
 };
 
 static struct route_setting audio_mode_incall_wm8962[] = {
+#if WM8962_MIXINL_PGA_VALUE
+	{
+		.ctl_name = WM8962_INPGAL_IN4L_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTL_MIXINL_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_MIXINL_SWITCH,
+		.intval = 1,
+	},
+#else
 	{
 		.ctl_name = WM8962_HPMIXL_IN4L_SWITCH,
 		.intval = 1,
@@ -591,6 +639,7 @@ static struct route_setting audio_mode_incall_wm8962[] = {
 		.ctl_name = WM8962_SPKOUTR_IN4L_SWITCH,
 		.intval = 1,
 	},
+#endif
     {
         .ctl_name = WM8962_AUDIO_MODE,
         .strval = WM8962_AUDIO_MODE_CALL,
