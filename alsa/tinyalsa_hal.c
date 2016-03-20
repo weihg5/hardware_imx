@@ -343,6 +343,8 @@ static int cavan_check_audio_mode(struct imx_audio_device *adev)
 
 static void select_mode(struct imx_audio_device *adev)
 {
+    cavan_set_audio_mode(adev, adev->mode); // Add By Fuang.Cao 2016-01-09
+
     if (adev->mode == AUDIO_MODE_IN_CALL) {
         ALOGW("Entering IN_CALL state, in_call=%d", adev->in_call);
         if (!adev->in_call) {
@@ -377,8 +379,6 @@ static void select_mode(struct imx_audio_device *adev)
             select_input_device(adev);
         }
     }
-
-    cavan_set_audio_mode(adev, adev->mode); // Add By Fuang.Cao 2016-01-09
 }
 
 
