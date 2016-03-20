@@ -279,10 +279,17 @@ static struct route_setting vx_hs_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
+#if WM8962_MIXINL_PGA_VALUE
+	{
+		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
+		.intval = 0,
+	},
+#else
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 1,
 	},
+#endif
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
 		.intval = WM8962_MIXINL_PGA_VALUE,
@@ -361,7 +368,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
 	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = WM8962_MIXINL_PGA_VALUE,
+		.intval = 0,
 	},
 #endif
 #if 0 // WM8962_DEBUG
@@ -419,10 +426,17 @@ static struct route_setting vx_main_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
+#if WM8962_MIXINL_PGA_VALUE
+	{
+		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
+		.intval = 0,
+	},
+#else
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 1,
 	},
+#endif
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
 		.intval = WM8962_MIXINL_PGA_VALUE,
@@ -521,10 +535,17 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
+#if WM8962_MIXINL_PGA_VALUE
+	{
+		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
+		.intval = 0,
+	},
+#else
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 1,
 	},
+#endif
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
 		.intval = WM8962_MIXINL_PGA_VALUE,
