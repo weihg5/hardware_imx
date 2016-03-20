@@ -35,8 +35,6 @@
 #define WM8962_PGA_MUX_MIXER                  "Mixer"
 #define WM8962_SPEAKER_JACK_SWITCH            "Speaker Jack Switch"
 #define WM8962_EARPIECE_JACK_SWITCH           "Earpiece Jack Switch"
-#define WM8962_RADIO_IN_SWITCH                "RADIO_IN Switch"
-#define WM8962_RADIO_OUT_SWITCH               "RADIO_OUT Switch"
 
 #define WM8962_SPEAKER_VOLUME                 "Speaker Volume"
 #define WM8962_SPEAKER_VOLUME_VALUE           127
@@ -108,14 +106,6 @@ static struct route_setting bt_output_wm8962[] = {
 
 static struct route_setting speaker_output_wm8962[] = {
     {
-        .ctl_name = WM8962_RADIO_IN_SWITCH,
-        .intval = 0,
-    },
-    {
-        .ctl_name = WM8962_RADIO_OUT_SWITCH,
-        .intval = 0,
-    },
-    {
         .ctl_name = WM8962_SPEAKER_SWITCH,
         .intval = 1,
     },
@@ -185,14 +175,6 @@ static struct route_setting hs_output_wm8962[] = {
 };
 
 static struct route_setting earpiece_output_wm8962[] = {
-    {
-        .ctl_name = WM8962_RADIO_IN_SWITCH,
-        .intval = 0,
-    },
-    {
-        .ctl_name = WM8962_RADIO_OUT_SWITCH,
-        .intval = 0,
-    },
 #if WM8962_DEBUG
 	{
 		.ctl_name = WM8962_SPEAKER_SWITCH,
