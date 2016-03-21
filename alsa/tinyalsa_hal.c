@@ -258,8 +258,10 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
     i = 0;
     while (route[i].ctl_name) {
         ctl = mixer_get_ctl_by_name(mixer, route[i].ctl_name);
-        if (!ctl)
+        if (!ctl) {
+            ALOGE("=> route \"%s\" not found!", route[i].ctl_name);
             return -EINVAL;
+        }
 
         /* Modify By Fuang.Cao 2016-03-19 */
         if (route[i].strval) {
