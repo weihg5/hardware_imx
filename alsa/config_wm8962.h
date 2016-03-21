@@ -74,12 +74,7 @@
 
 #define WM8962_MIXINL_PGA_SWITCH              "MIXINL PGA Switch"
 #define WM8962_MIXINL_PGA_VOLUME              "MIXINL PGA Volume"
-
-#ifdef MODEM_EC20
-#define WM8962_MIXINL_PGA_VALUE               1
-#else
 #define WM8962_MIXINL_PGA_VALUE               0
-#endif
 
 #define WM8962_DIGITAL_CAPTURE_VOLUME         "Digital Capture Volume"
 
@@ -261,7 +256,7 @@ static struct route_setting vx_hs_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
-#if WM8962_MIXINL_PGA_VALUE
+#ifdef MODEM_EC20
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 0,
@@ -408,7 +403,7 @@ static struct route_setting vx_main_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
-#if WM8962_MIXINL_PGA_VALUE
+#ifdef MODEM_EC20
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 0,
@@ -517,7 +512,7 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
-#if WM8962_MIXINL_PGA_VALUE
+#ifdef MODEM_EC20
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 0,
