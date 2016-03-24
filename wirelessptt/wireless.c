@@ -736,8 +736,97 @@ static int wireless_speek = 0;
 
 #define SYS_FS_DEVICES_DIR "/sys/bus/platform/devices"
 
+static int wireless_process_command(const char *command, const char *args)
+{
+	RFS_INFO("command = `%s', args = `%s'", command, args);
+
+	if (strcmp(command, "restore_audio_route") == 0) {
+		if (wireless_open) {
+			set_audio_route(true);
+		}
+
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+static void *wireless_cmdline_thread(void *data)
+{
+	const char *pathname = "/dev/radio-cmdline";
+
+	RFS_INFO("%s running", __FUNCTION__);
+
+	while (1) {
+		FILE *fp;
+
+		fp = fopen(pathname, "r");
+		if (fp == NULL) {
+			if (errno == ENOENT) {
+				mkfifo(pathname, 0422);
+				chmod(pathname, 0422);
+			} else {
+				RFS_INFO("Failed to open file `%s': %s", pathname, strerror(errno));
+				usleep(200 * 1000);
+			}
+
+			continue;
+		}
+
+		while (1) {
+			char command[1024];
+			char *p;
+			const char *name, *args;
+
+			if (fgets(command, sizeof(command) - 1, fp) == NULL) {
+				break;
+			}
+
+			name = command;
+			args = NULL;
+
+			for (p = command;; p++) {
+				switch (*p) {
+				case ' ':
+				case '\t':
+					if (p == name) {
+						name++;
+					} else if (p == args) {
+						args++;
+					} else if (args == NULL) {
+						*p = 0;
+						args = p + 1;
+					}
+					break;
+
+				case '\r':
+				case '\n':
+					*p = 0;
+				case '\0':
+					goto label_wireless_process_command;
+				}
+			}
+
+label_wireless_process_command:
+			wireless_process_command(name, args);
+		}
+
+		fclose(fp);
+	}
+
+	unlink(pathname);
+
+	RFS_INFO("%s exit", __FUNCTION__);
+
+	pthread_detach(pthread_self());
+
+	return NULL;
+}
+
 static int init()
 {
+	pthread_t thread;
+
 #ifdef _ANDROID
 	int err;
 	struct stat file_stat;
@@ -816,6 +905,9 @@ static int init()
 		return -1;
 	}
 #endif	
+
+	pthread_create(&thread, NULL, wireless_cmdline_thread, NULL);
+
 	return 0;
 }
 static void set_send_mode(int send)
