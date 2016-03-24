@@ -243,6 +243,20 @@ static int convert_record_data(void *src, void *dst, unsigned int frames, bool b
 
      return 0;
 }
+static void set_alsa_ctl_value(struct imx_audio_device *adev, char *outctl, int volume)
+{
+	unsigned int i, j;
+	ALOGW("update_out_volume=%d\n", volume);
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], outctl);
+		if (ctl) {
+            for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
+				mixer_ctl_set_value(ctl, j, volume);
+            }
+		}
+    }
+}
+
 
 /* The enable flag when 0 makes the assumption that enums are disabled by
  * "Off" and integers/booleans by 0 */
@@ -367,7 +381,9 @@ static void select_mode(struct imx_audio_device *adev)
             } else
                 adev->out_device &= ~AUDIO_DEVICE_OUT_SPEAKER;
             select_output_device(adev);
-
+#ifdef MODEM_MC9090
+			set_alsa_ctl_value(adev, WM8962_DIGITAL_PLAYBACK_VOLUME, 112);
+#endif
             adev_set_voice_volume(&adev->hw_device, adev->voice_volume);
             adev->in_call = 1;
         }
@@ -377,24 +393,12 @@ static void select_mode(struct imx_audio_device *adev)
         if (adev->in_call) {
             adev->in_call = 0;
             force_all_standby(adev);
+#ifdef MODEM_MC9090
+			set_alsa_ctl_value(adev, WM8962_DIGITAL_PLAYBACK_VOLUME, 96);
+#endif
             select_output_device(adev);
             select_input_device(adev);
         }
-    }
-}
-
-
-static void update_out_volume(struct imx_audio_device *adev, char *outctl, int volume)
-{
-	unsigned int i, j;
-	ALOGW("update_out_volume=%d\n", volume);
-    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
-		struct mixer_ctl *ctl = mixer_get_ctl_by_name(adev->mixer[i], outctl);
-		if (ctl) {
-            for (j = 0; j < mixer_ctl_get_num_values(ctl); j++) {
-				mixer_ctl_set_value(ctl, j, volume);
-            }
-		}
     }
 }
 
@@ -405,9 +409,9 @@ static void update_voice_volume(struct imx_audio_device *adev)
 	val = MIN_OUT_VOLUME +((MAX_OUT_VOLUME-MIN_OUT_VOLUME) * adev->voice_volume);
 
 	if (adev->out_device & AUDIO_DEVICE_OUT_EARPIECE)
-		update_out_volume(adev, WM8962_HEADPHONE_VOLUME, val);
+		set_alsa_ctl_value(adev, WM8962_HEADPHONE_VOLUME, val);
 	if(adev->out_device & AUDIO_DEVICE_OUT_SPEAKER)
-		update_out_volume(adev, WM8962_SPEAKER_VOLUME, val);
+		set_alsa_ctl_value(adev, WM8962_SPEAKER_VOLUME, val);
 }
 
 

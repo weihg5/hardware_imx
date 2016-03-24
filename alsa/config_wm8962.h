@@ -37,7 +37,7 @@
 #define WM8962_EARPIECE_JACK_SWITCH           "Earpiece Jack Switch"
 
 #define WM8962_SPEAKER_VOLUME                 "Speaker Volume"
-#define WM8962_SPEAKER_VOLUME_VALUE           127
+#define WM8962_SPEAKER_VOLUME_VALUE           121
 #define WM8962_SPEAKER_SWITCH                 "Speaker Switch"
 #define WM8962_SPEAKER_MIXER_SWITCH           "Speaker Mixer Switch"
 #define WM8962_SPKOUTL_PGA                    "SPKOUTL PGA"
