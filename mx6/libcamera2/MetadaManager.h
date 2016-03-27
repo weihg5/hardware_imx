@@ -61,7 +61,7 @@ public:
     status_t getJpegQuality(int32_t &quality);
     status_t getJpegThumbQuality(int32_t &thumb);
     status_t getJpegThumbSize(int &width, int &height);
-
+	status_t getFlashMode(uint8_t &mode);
     status_t getSupportedRecordingFormat(int *src, int len);
     status_t getSupportedPictureFormat(int *src, int len);
 

@@ -31,6 +31,11 @@ CameraHal::~CameraHal()
     mRequestManager.clear();
 }
 
+void CameraHal::call_notify_callback(int32_t msg, int32_t ext1, int32_t ext2, int32_t ext3)
+{
+	mNotifyCb(msg, ext1, ext2, ext3, mNotifyUserPtr);
+}
+
 void CameraHal::handleError(int err)
 {
     switch (err) {
@@ -47,6 +52,10 @@ void CameraHal::handleError(int err)
     }
 }
 
+void CameraHal::action_triger(int32_t action, int32_t ext1, int32_t ext2)
+{
+	mRequestManager->action_triger(action, ext1, ext2);
+}
 int CameraHal::notify_request_queue_not_empty()
 {
     FLOGI("%s running", __FUNCTION__);

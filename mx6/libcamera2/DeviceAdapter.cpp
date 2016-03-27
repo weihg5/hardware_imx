@@ -210,9 +210,10 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
     if (info.devPath[0] != '\0') {
         mCameraHandle = open(info.devPath, O_RDWR);
     }
+
 	for (int i = 0; i < 2; i++) {
 		struct v4l2_dbg_chip_ident vid_chip;
-        struct v4l2_control ctrl;
+		struct v4l2_control ctrl;
         ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
         ctrl.value = i;
         if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
@@ -732,6 +733,8 @@ int DeviceAdapter::deviceThread()
 
 status_t DeviceAdapter::autoFocus()
 {
+	ALOGE("set Camera auto focus\n");
+#if 0
     if (mAutoFocusThread != NULL) {
         mAutoFocusThread.clear();
     }
@@ -740,7 +743,11 @@ status_t DeviceAdapter::autoFocus()
     if (mAutoFocusThread == NULL) {
         return UNKNOWN_ERROR;
     }
+
     return NO_ERROR;
+#else
+	return autoFocusThread();
+#endif
 }
 
 status_t DeviceAdapter::cancelAutoFocus()
@@ -750,12 +757,16 @@ status_t DeviceAdapter::cancelAutoFocus()
 
 int DeviceAdapter::autoFocusThread()
 {
-    sp<CameraEvent> cameraEvt = new CameraEvent();
-    cameraEvt->mEventType = CameraEvent::EVENT_FOCUS;
-    dispatchEvent(cameraEvt);
-
+	struct v4l2_control ctrl;
+	ALOGE("auto Focus Thread\n");
+	ctrl.id = V4L2_CID_FOCUS_AUTO;
+	ctrl.value = 0;
+	if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
+		ALOGE("set auto focus failt\n");
+		return UNKNOWN_ERROR;
+	}
     // exit the thread.
-    return UNKNOWN_ERROR;
+    return NO_ERROR;
 }
 
 void DeviceAdapter::handleFrameRelease(CameraFrame *buffer)

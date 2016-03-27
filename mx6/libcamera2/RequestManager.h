@@ -70,7 +70,7 @@ public:
     bool handleRequest();
     void release();
     void setErrorListener(CameraErrorListener *listener);
-
+	void action_triger(int32_t action, int32_t ext1, int32_t ext2);
     class RequestHandleThread : public Thread {
     public:
         RequestHandleThread(RequestManager *rm) :

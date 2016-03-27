@@ -145,6 +145,7 @@ struct SensorInfo
     float mPhysicalWidth;
     float mPhysicalHeight;
     float mFocalLength;
+	char mSensorname[CAMERA_SENSOR_LENGTH];
 };
 
 struct VideoInfo

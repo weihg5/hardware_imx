@@ -85,6 +85,14 @@ void RequestManager::handleError(int err)
     }
 }
 
+void RequestManager::action_triger(int32_t action, int32_t ext1, int32_t ext2)
+{
+	if (action == CAMERA2_TRIGGER_AUTOFOCUS){
+		if (mDeviceAdapter.get())
+			mDeviceAdapter->autoFocus();
+	}
+}
+
 void RequestManager::stopStream(int id)
 {
     sp<StreamAdapter> cameraStream = mStreamAdapter[id];

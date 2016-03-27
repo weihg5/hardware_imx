@@ -23,7 +23,7 @@ status_t Ov5645Mipi::initSensorInfo(const CameraInfo& info)
         FLOGE("OvDevice: initParameters sensor has not been opened");
         return BAD_VALUE;
     }
-
+	strcpy(mSensorname, "ov5645_mipi");
     // first read sensor format.
     int ret = 0, index = 0;
     int sensorFormats[MAX_SENSOR_FORMAT];

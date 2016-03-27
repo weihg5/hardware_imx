@@ -387,7 +387,9 @@ status_t MetadaManager::setCurrentRequest(camera_metadata_t* request)
     if (mCurrentRequest == NULL) {
         return BAD_VALUE;
     }
-
+	u8 mode = 0xff;
+	getFlashMode(mode);
+	ALOGE("flash mode=%d\n", mode);
     return NO_ERROR;
 }
 
@@ -413,6 +415,21 @@ status_t MetadaManager::getFrameRate(int *value)
         *value = 15;
     }
     return NO_ERROR;
+}
+
+status_t MetadaManager::getFlashMode(uint8_t &mode)
+{
+    camera_metadata_entry_t streams;
+    int res = find_camera_metadata_entry(mCurrentRequest,
+            ANDROID_FLASH_MODE, &streams);
+    if (res != NO_ERROR) {
+        ALOGE("%s: error reading fps range tag", __FUNCTION__);
+        return BAD_VALUE;
+    }
+	if (streams.count){
+		mode = streams.data.u8[0];
+	}
+	return NO_ERROR;
 }
 
 status_t MetadaManager::getGpsCoordinates(double *pCoords, int count)
@@ -642,13 +659,25 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     if ( ( ret = addOrSize(*info, sizeRequest, &entryCount, &dataCount, \
             tag, data, count) ) != OK ) return ret
 
+	static uint32_t max3ARegin = 1;
+	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname))
+		max3ARegin = 0;
+	ADD_OR_SIZE(ANDROID_CONTROL_MAX_REGIONS, &max3ARegin, 1);
     // android.lens
-    static float minFocusDistance = 0;
-    ADD_OR_SIZE(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
-            &minFocusDistance, 1);
-    ADD_OR_SIZE(ANDROID_LENS_INFO_HYPERFOCAL_DISTANCE,
-            &minFocusDistance, 1);
+    if ( !strcmp("ov5640_mipi", mSensorInfo->mSensorname)){
+    	static float minFocusDistance[] ={0.1f, 0.2f};
+    	ADD_OR_SIZE(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
+            	&minFocusDistance, sizeof(minFocusDistance)/sizeof(float));
+    	ADD_OR_SIZE(ANDROID_LENS_INFO_HYPERFOCAL_DISTANCE,
+            	&minFocusDistance, sizeof(minFocusDistance)/sizeof(float));
+    }else {
+    	static float minFocusDistance1 = 0;
+    	ADD_OR_SIZE(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
+            	&minFocusDistance1, 1);
+    	ADD_OR_SIZE(ANDROID_LENS_INFO_HYPERFOCAL_DISTANCE,
+            	&minFocusDistance1, 1);
 
+	}
     ADD_OR_SIZE(ANDROID_LENS_INFO_AVAILABLE_FOCAL_LENGTHS,
             &mSensorInfo->mFocalLength, 1);
 
@@ -725,7 +754,11 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     //TODO: sensor color calibration fields
 
     // android.flash
-    uint8_t flashAvailable = 0;
+    uint8_t flashAvailable = 1;
+	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname))
+	{
+		flashAvailable = 0;
+	}
     ADD_OR_SIZE(ANDROID_FLASH_INFO_AVAILABLE, &flashAvailable, 1);
 
     static const int64_t flashChargeDuration = 0;
@@ -877,12 +910,19 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     ADD_OR_SIZE(ANDROID_CONTROL_AWB_AVAILABLE_MODES,
             availableAwbModes, sizeof(availableAwbModes));
 
-    static const uint8_t availableAfModes[] = {
-            ANDROID_CONTROL_AF_MODE_OFF
-    };
-    ADD_OR_SIZE(ANDROID_CONTROL_AF_AVAILABLE_MODES,
+	if ( !strcmp("ov5640_mipi", mSensorInfo->mSensorname)){
+    	static const uint8_t availableAfModes[] = {
+            	ANDROID_CONTROL_AF_MODE_OFF,
+				ANDROID_CONTROL_AF_MODE_AUTO
+    	};
+    	ADD_OR_SIZE(ANDROID_CONTROL_AF_AVAILABLE_MODES,
                 availableAfModes, sizeof(availableAfModes));
+	}else {
+		static const uint8_t availableAfModes1 = ANDROID_CONTROL_AF_MODE_OFF;
+			ADD_OR_SIZE(ANDROID_CONTROL_AF_AVAILABLE_MODES,
+					&availableAfModes1, 1);
 
+	}
     static const uint8_t availableVstabModes[] = {
             ANDROID_CONTROL_VIDEO_STABILIZATION_MODE_OFF
     };

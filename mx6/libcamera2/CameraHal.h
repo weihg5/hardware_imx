@@ -64,8 +64,9 @@ public:
     int get_metadata_vendor_tag_ops(vendor_tag_query_ops_t **ops);
     int set_notify_callback(camera2_notify_callback notify_cb,
             void *user);
-
+	void call_notify_callback(int32_t msg, int32_t ext1, int32_t ext2, int32_t ext3);
     void     release();
+	void action_triger(int32_t action, int32_t ext1, int32_t ext2);
     status_t dump(int fd) const;
 
     void     LockWakeLock();

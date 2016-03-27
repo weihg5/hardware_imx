@@ -224,12 +224,20 @@ int release_reprocess_stream(
     return INVALID_OPERATION;
 }
 
-int trigger_action(const struct camera2_device *,
+int trigger_action(const struct camera2_device *device,
         uint32_t trigger_id,
         int32_t ext1,
         int32_t ext2)
 {
-    return INVALID_OPERATION;
+	CameraHal *camHal = fsl_get_camerahal(device);
+	ALOGE("trigger_id=%d, ext1=%d, ext2=%d", trigger_id, ext1, ext2);
+	
+	if (camHal != NULL) {
+		camHal->action_triger(trigger_id, ext1, ext2);
+		camHal->call_notify_callback(CAMERA2_MSG_AUTOFOCUS, ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED, 
+			ext1, 0);
+	}
+    return OK;
 }
 
 int set_notify_callback(const struct camera2_device *device,
@@ -448,7 +456,7 @@ int GetDevPath(const char  *pCameraName,
 						ALOGE("set ctrl switch camera failed\n");
 						continue;
 					}
-				
+
 					if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
 						continue;
 					}
