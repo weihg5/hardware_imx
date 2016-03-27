@@ -37,7 +37,7 @@
 #define WM8962_EARPIECE_JACK_SWITCH           "Earpiece Jack Switch"
 
 #define WM8962_SPEAKER_VOLUME                 "Speaker Volume"
-#define WM8962_SPEAKER_VOLUME_VALUE           121
+#define WM8962_SPEAKER_VOLUME_VALUE           127
 #define WM8962_SPEAKER_SWITCH                 "Speaker Switch"
 #define WM8962_SPEAKER_MIXER_SWITCH           "Speaker Mixer Switch"
 #define WM8962_SPKOUTL_PGA                    "SPKOUTL PGA"
@@ -86,7 +86,7 @@ static struct route_setting defaults_wm8962[] = {
     /* general */
     {
         .ctl_name = WM8962_DIGITAL_PLAYBACK_VOLUME,
-        .intval = 96,
+        .intval = 110,
     },
     {
         .ctl_name = NULL,
@@ -311,24 +311,24 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_CAPTURE_VOLUME,
-        .intval = 63,
+        .intval = 60,
     },
     {
         .ctl_name = WM8962_DIGITAL_CAPTURE_VOLUME,
-        .intval = 127,
-    },/*
+        .intval = 126,
+    },
     {
-        .ctl_name = WM8962_INPGAR_IN3R_SWITCH,
+        .ctl_name = WM8962_INPGAL_IN2L_SWITCH,
         .intval = 1,
     },
     {
-        .ctl_name = WM8962_MIXINR_PGA_SWITCH,
+        .ctl_name = WM8962_MIXINL_PGA_SWITCH,
         .intval = 1,
     },
     {
-        .ctl_name = WM8962_MIXINR_PGA_VOLUME,
-        .intval = 7,
-    },*/
+        .ctl_name = WM8962_MIXINL_PGA_VOLUME,
+        .intval = 60,
+    },
 #if 0
     {
         .ctl_name = WM8962_MIXINR_IN3R_SWITCH,
@@ -338,7 +338,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
         .ctl_name = WM8962_MIXINR_IN3R_VOLUME,
         .intval = 7,
     },
-#else
+//#else
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 1,
