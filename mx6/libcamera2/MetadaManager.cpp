@@ -387,9 +387,7 @@ status_t MetadaManager::setCurrentRequest(camera_metadata_t* request)
     if (mCurrentRequest == NULL) {
         return BAD_VALUE;
     }
-	u8 mode = 0xff;
-	getFlashMode(mode);
-	ALOGE("flash mode=%d\n", mode);
+
     return NO_ERROR;
 }
 
@@ -428,6 +426,21 @@ status_t MetadaManager::getFlashMode(uint8_t &mode)
     }
 	if (streams.count){
 		mode = streams.data.u8[0];
+	}
+	return NO_ERROR;
+}
+
+status_t MetadaManager::getAEExposure(int32_t aeexp)
+{
+	camera_metadata_entry_t streams;
+	int res = find_camera_metadata_entry(mCurrentRequest,
+			ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION, &streams);
+	if (res != NO_ERROR) {
+		ALOGE("%s: error reading fps range tag", __FUNCTION__);
+		return BAD_VALUE;
+	}
+	if (streams.count){
+		aeexp = streams.data.i32[0];
 	}
 	return NO_ERROR;
 }

@@ -15,7 +15,16 @@
  */
 
 #include "RequestManager.h"
-
+static int flash_need_close;
+static void camera_flash(int enable)
+{
+	FILE *fp = fopen("/sys/bus/i2c/devices/4-003c/triger_flash", "r+");
+	if (fp){
+		const char *c = enable?"1":"0";
+		fwrite(c, 1, 1,fp);
+		fclose(fp);
+	}
+}
 RequestManager::RequestManager(int cameraId)
 {
     mRequestOperation = NULL;
@@ -88,8 +97,21 @@ void RequestManager::handleError(int err)
 void RequestManager::action_triger(int32_t action, int32_t ext1, int32_t ext2)
 {
 	if (action == CAMERA2_TRIGGER_AUTOFOCUS){
-		if (mDeviceAdapter.get())
+		uint8_t mode = ANDROID_FLASH_MODE_OFF;
+		mMetadaManager->getFlashMode(mode);
+
+		if (mDeviceAdapter.get()) {
+			if (mode != ANDROID_FLASH_MODE_OFF) {
+				camera_flash(1);
+				flash_need_close = 1;
+			}
 			mDeviceAdapter->autoFocus();
+		}
+	}else if (action == CAMERA2_TRIGGER_CANCEL_AUTOFOCUS){
+		if (flash_need_close){
+			camera_flash(0);
+			flash_need_close = 0;
+		}
 	}
 }
 
@@ -240,6 +262,10 @@ bool RequestManager::handleRequest()
     }//end while
 
     FLOG_TRACE("%s exiting", __FUNCTION__);
+	if (flash_need_close){
+		camera_flash(0);
+		flash_need_close = 0;
+	}
     stopAllStreams();
     mRequestThread.clear();
     mPendingRequests--;

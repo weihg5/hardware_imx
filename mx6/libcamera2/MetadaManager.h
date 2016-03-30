@@ -64,6 +64,7 @@ public:
 	status_t getFlashMode(uint8_t &mode);
     status_t getSupportedRecordingFormat(int *src, int len);
     status_t getSupportedPictureFormat(int *src, int len);
+	status_t getAEExposure(int32_t aeexp);
 
 private:
     camera_metadata_t* mCurrentRequest;
