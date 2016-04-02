@@ -81,6 +81,8 @@
 #define WM8962_DIGITAL_PLAYBACK_VOLUME        "Digital Playback Volume"
 #define WM8962_INPGAL_IN4L_SWITCH             "INPGAL IN4L Switch"
 #define WM8962_HPMIXL_MIXINL_SWITCH           "HPMIXL MIXINL Switch"
+#define WM8962_INPGAL_IN1L_SWITCH            "INPGAL IN1L Switch"
+#define WM8962_INPGAR_IN1R_SWITCH            "INPGAR IN1R Switch"
 /* These are values that never change */
 static struct route_setting defaults_wm8962[] = {
     /* general */
@@ -88,6 +90,14 @@ static struct route_setting defaults_wm8962[] = {
         .ctl_name = WM8962_DIGITAL_PLAYBACK_VOLUME,
         .intval = 110,
     },
+    {
+		.ctl_name = WM8962_INPGAL_IN1L_SWITCH,
+		.intval = 0,
+	},
+	{
+		.ctl_name = WM8962_INPGAR_IN1R_SWITCH,
+		.intval = 0,
+	},
     {
         .ctl_name = NULL,
     },
