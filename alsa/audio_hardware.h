@@ -74,6 +74,7 @@ struct audio_card{
     struct route_setting *vx_bt_mic_input;
     struct route_setting *mm_bt_mic_input;
     struct route_setting *audio_modes[AUDIO_MODE_CNT]; // Add By Fuang.Cao 2016-01-09
+    struct route_setting *bt_incall_mode; // Add By Fuang.Cao 2016-04-03
     int  card;
     unsigned int  out_rate;
     int  out_channels;

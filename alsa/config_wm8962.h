@@ -647,6 +647,16 @@ static struct route_setting audio_mode_incall_wm8962[] = {
     },
 };
 
+static struct route_setting audio_mode_bt_incall_wm8962[] = {
+    {
+        .ctl_name = WM8962_AUDIO_MODE,
+        .strval = WM8962_AUDIO_MODE_BT_CALL,
+    },
+    {
+        .ctl_name = NULL,
+    },
+};
+
 /* ALSA cards for IMX, these must be defined according different board / kernel config*/
 static struct audio_card  wm8962_card = {
     .name = "wm8962-audio",
@@ -683,6 +693,7 @@ static struct audio_card  wm8962_card = {
 		audio_mode_incall_wm8962,
 		audio_mode_normal_wm8962,
     },
+    .bt_incall_mode      = audio_mode_bt_incall_wm8962,
     .card                = 0,
     .out_rate            = 0,
     .out_channels        = 0,

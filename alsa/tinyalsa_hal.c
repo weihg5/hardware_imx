@@ -338,8 +338,18 @@ static int cavan_set_audio_mode(struct imx_audio_device *adev, int mode)
 	int i;
 	int ret = 0;
 
+	ALOGD("%s: mode = %d, out_device = 0x%08x", __FUNCTION__, mode, adev->out_device);
+
 	for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
-		ret |= set_route_by_array(adev->mixer[i], adev->card_list[i]->audio_modes[mode], 1);
+		struct route_setting *route;
+
+		if (mode == AUDIO_MODE_IN_CALL && adev->card_list[i]->bt_incall_mode && (adev->out_device & AUDIO_DEVICE_OUT_ALL_SCO)) {
+			route = adev->card_list[i]->bt_incall_mode;
+		} else {
+			route = adev->card_list[i]->audio_modes[mode];
+		}
+
+		ret |= set_route_by_array(adev->mixer[i], route, 1);
 	}
 
 	return ret;
@@ -477,6 +487,8 @@ static void select_output_device(struct imx_audio_device *adev)
        in_set_parameters is used to update the input route
        todo: use sub mic for handsfree case */
     if (adev->mode == AUDIO_MODE_IN_CALL) {
+        cavan_set_audio_mode(adev, AUDIO_MODE_IN_CALL); // Add By Fuang.Cao: 2016-04-03
+
         if (bt_on)
             for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
                 set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_bt_mic_input, bt_on);
