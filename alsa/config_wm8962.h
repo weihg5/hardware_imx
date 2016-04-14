@@ -37,7 +37,7 @@
 #define WM8962_EARPIECE_JACK_SWITCH           "Earpiece Jack Switch"
 
 #define WM8962_SPEAKER_VOLUME                 "Speaker Volume"
-#define WM8962_SPEAKER_VOLUME_VALUE           127
+#define WM8962_SPEAKER_VOLUME_VALUE           121
 #define WM8962_SPEAKER_SWITCH                 "Speaker Switch"
 #define WM8962_SPEAKER_MIXER_SWITCH           "Speaker Mixer Switch"
 #define WM8962_SPKOUTL_PGA                    "SPKOUTL PGA"
@@ -88,7 +88,7 @@ static struct route_setting defaults_wm8962[] = {
     /* general */
     {
         .ctl_name = WM8962_DIGITAL_PLAYBACK_VOLUME,
-        .intval = 110,
+        .intval = 96,
     },
     {
 		.ctl_name = WM8962_INPGAL_IN1L_SWITCH,
@@ -102,6 +102,30 @@ static struct route_setting defaults_wm8962[] = {
         .ctl_name = NULL,
     },
 };
+
+
+static struct route_setting wm8962_ppt_mode[] = {
+    {
+        .ctl_name = "Headphone MixerR Switch",
+        .intval = 1,
+    },
+    {
+		.ctl_name = "Headphone SwitchR",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Earpiece Jack Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Headphone VolumeR",
+		.intval = 115,
+	},
+	{
+        .ctl_name = NULL,
+    },
+};
+
 
 static struct route_setting bt_output_wm8962[] = {
     {

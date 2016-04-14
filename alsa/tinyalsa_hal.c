@@ -181,6 +181,17 @@ static int is_device_auto(void)
     return strstr(property, PRODUCT_DEVICE_AUTO) != NULL;
 }
 
+
+static int check_wireless(void)
+{
+	char prop[PROPERTY_VALUE_MAX];
+
+	memset(prop, 0, sizeof(prop));
+	property_get("ppt.wireless.working", prop, "0");
+	ALOGE("ppt.wireless.working=%s\n", prop);
+	return prop[0] - '0';
+}
+
 static int convert_record_data(void *src, void *dst, unsigned int frames, bool bit_24b_2_16b, bool mono2stereo, bool stereo2mono)
 {
      unsigned int i;
@@ -315,7 +326,7 @@ static void force_all_standby(struct imx_audio_device *adev)
     struct imx_stream_in *in;
     struct imx_stream_out *out;
     int i;
-
+	ALOGE("force_all_standby...\n");
     for(i = 0; i < OUTPUT_TOTAL; i++)
         if (adev->active_output[i]) {
             out = adev->active_output[i];
@@ -366,6 +377,15 @@ static int cavan_check_audio_mode(struct imx_audio_device *adev)
 	return 0;
 }
 /* End add */
+
+static void select_wireless_ppt_mode(struct imx_audio_device *adev)
+{
+	int i;
+	if (check_wireless() == 0)
+		return;
+    for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+        set_route_by_array(adev->mixer[i], wm8962_ppt_mode, 1);
+}
 
 static void select_mode(struct imx_audio_device *adev)
 {
@@ -526,6 +546,7 @@ static void select_output_device(struct imx_audio_device *adev)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
         }
     }
+	select_wireless_ppt_mode(adev);
 }
 
 static void select_input_device(struct imx_audio_device *adev)
@@ -1043,11 +1064,12 @@ static int do_output_standby(struct imx_stream_out *out)
     return 0;
 }
 
+
 static int out_standby(struct audio_stream *stream)
 {
     struct imx_stream_out *out = (struct imx_stream_out *)stream;
-    int status;
-
+    int status = 0;
+	ALOGE("out_standby....\n");
     pthread_mutex_lock(&out->dev->lock);
     pthread_mutex_lock(&out->lock);
     status = do_output_standby(out);

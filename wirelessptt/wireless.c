@@ -622,44 +622,109 @@ static bool tinymix_command(const char *control, const char *value)
 }
 
 #if USE_PGA
+//main mic ---> IN2L --->mixboost gain---->
+//   MixinL----->HPmix--->HP PGA --->HPR out--->PPT audio in
+static void set_ppt_audio_in_route()
+{
+#if 0
+	tinymix_command("MIXINL IN2L Switch", "1");
+	tinymix_command("Input Mixer Switch", "1");//enable mixer boost gain
+	tinymix_command("MIXINL IN2L Volume", "7");//set mixer boost gain to 6db
+#else
+	tinymix_command("Capture SwitchL", "1");
+	tinymix_command("Capture VolumeL", "60");
+	tinymix_command("INPGAL IN2L Switch", "1");
+	tinymix_command("MIXINL PGA Switch" , "1");
+#endif
+	tinymix_command("HPMIXR MIXINL Switch", "1");
+	tinymix_command("HPOUTR PGA", "Mixer");
+
+	tinymix_command("Headphone MixerR Switch", "1");
+	tinymix_command("Headphone SwitchR", "1");
+	tinymix_command("Earpiece Jack Switch", "1");
+	tinymix_command("Headphone VolumeR", "115");
+
+	tinymix_command("Headphone MixerL Switch", "0");
+}
+
+static void unset_ppt_audio_in_route()
+{
+#if 0
+	tinymix_command("MIXINL IN2L Switch", "1");
+	tinymix_command("Input Mixer Switch", "1");//enable mixer boost gain
+	tinymix_command("MIXINL IN2L Volume", "7");//set mixer boost gain to 6db
+#else
+	tinymix_command("Capture SwitchL", "0");
+	tinymix_command("Capture VolumeL", "60");
+	tinymix_command("INPGAL IN2L Switch", "0");
+	tinymix_command("MIXINL PGA Switch" , "0");
+#endif
+	tinymix_command("HPMIXR MIXINL Switch", "0");
+	tinymix_command("HPOUTR PGA", "Mixer");
+
+	tinymix_command("Headphone MixerR Switch", "0");
+	tinymix_command("Headphone SwitchR", "0");
+	tinymix_command("Earpiece Jack Switch", "0");
+	tinymix_command("Headphone Volume", "0");
+
+	tinymix_command("Headphone MixerL Switch", "0");
+}
+
+
+//PPT audio out ---> IN4R --PGA-->mixinR -->Spkmix ---> Spk PGA --->Speek
+static void set_ppt_audio_out_route()
+{
+	tinymix_command("Speaker Volume", "10");
+	tinymix_command("Capture SwitchR", "1");
+	tinymix_command("Capture VolumeR", "40");
+	tinymix_command("INPGAR IN4R Switch", "1");
+	tinymix_command("MIXINR PGA Switch" , "1");
+
+	tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
+	tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
+
+	tinymix_command("SPKOUTL PGA", "Mixer");
+	tinymix_command("SPKOUTR PGA", "Mixer");
+
+	tinymix_command("Speaker Mixer Switch", "1");
+	tinymix_command("Speaker Switch", "1");
+	tinymix_command("Speaker Volume", "121");
+
+	tinymix_command("RADIO_OUT Switch", "1");
+	tinymix_command("Speaker Jack Switch", "5");
+
+}
+
+static void unset_ppt_audio_out_route()
+{
+	tinymix_command("Speaker Jack Switch", "0");
+	tinymix_command("RADIO_OUT Switch", "0");
+	
+	tinymix_command("Speaker Switch", "0");
+	tinymix_command("INPGAR IN4R Switch", "0");
+	tinymix_command("MIXINR PGA Switch" , "0");
+	
+	tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
+	tinymix_command("SPKOUTR Mixer IN4R Switch", "0");
+	
+	tinymix_command("Speaker Mixer Switch", "0");
+	tinymix_command("SPKOUTL PGA", "DAC");
+	tinymix_command("SPKOUTR PGA", "DAC");
+	tinymix_command("Speaker Switch", "0");
+	tinymix_command("MIXINL IN2L Switch", "0");
+	tinymix_command("Input MixerL Switch", "0");//enable mixer boost gain
+	tinymix_command("MIXINL IN2L Volume", "5");//set mixer boost gain to 6db
+
+}
 static void set_audio_route(bool enable)
 {
 
 	if (enable) {
-		tinymix_command("Capture Switch", "1");
-		tinymix_command("Capture Volume", "40");
-		tinymix_command("INPGAR IN4R Switch", "1");
-		tinymix_command("MIXINR PGA Switch" , "1");
-
-		tinymix_command("SPKOUTL Mixer MIXINR Switch", "1");
-		tinymix_command("SPKOUTR Mixer MIXINR Switch", "1");
-
-		tinymix_command("SPKOUTL PGA", "Mixer");
-		tinymix_command("SPKOUTR PGA", "Mixer");
-
-		tinymix_command("Speaker Mixer Switch", "1");
-		tinymix_command("Speaker Switch", "1");
-		tinymix_command("Speaker Volume", "121");
-
-		tinymix_command("RADIO_OUT Switch", "1");
-		tinymix_command("Speaker Jack Switch", "1");
+		set_ppt_audio_in_route();
+		set_ppt_audio_out_route();
 	} else {
-		tinymix_command("Speaker Jack Switch", "0");
-		tinymix_command("RADIO_OUT Switch", "0");
-
-		tinymix_command("Speaker Switch", "0");
-		tinymix_command("INPGAR IN4R Switch", "0");
-		tinymix_command("MIXINR PGA Switch" , "0");
-
-		tinymix_command("SPKOUTL Mixer IN4R Switch", "0");
-		tinymix_command("SPKOUTR Mixer IN4R Switch", "0");
-
-		tinymix_command("Speaker Mixer Switch", "0");
-		tinymix_command("SPKOUTL PGA", "DAC");
-		tinymix_command("SPKOUTR PGA", "DAC");
-		tinymix_command("Speaker Switch", "0");
-		// tinymix_command("Headphone Volume", "0");
-		// tinymix_command("Headphone Switch", "0");
+		unset_ppt_audio_in_route();
+		unset_ppt_audio_out_route();
 	}
 }
 #else
@@ -923,16 +988,23 @@ static void set_send_mode(int send)
 
 static void open_wireless(int open)
 {
-	if (open){		
+	if (open){
+		property_set("ppt.wireless.working", "1");
 		set_power("HIGH");
 		set_sleep("WAKE");
 		set_send_mode(0);
 		msleep(200);
 		set_audio_route(true);
+		//msleep(1000);
+		//send_cmd_wait_ack("AT+DMOCONNECT");
+		//send_cmd_wait_ack("AT+DMOCONNECT");
+		//send_cmd_wait_ack("AT+DMOCONNECT");
+		//send_cmd_wait_ack("AT+DMOCONNECT");
 	}else{
 		set_audio_route(false);
 		set_power("LOW");
 		set_sleep("SLEEP");
+		property_set("ppt.wireless.working", "0");
 	}
 }
 #define KEYBOARD_BL "/sys/class/timed_output/key_bl/enable"
