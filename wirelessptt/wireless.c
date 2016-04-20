@@ -712,9 +712,6 @@ static void unset_ppt_audio_out_route()
 	tinymix_command("SPKOUTR PGA", "DAC");
 	tinymix_command("Speaker Switch", "0");
 	tinymix_command("MIXINL IN2L Switch", "0");
-	tinymix_command("Input MixerL Switch", "0");//enable mixer boost gain
-	tinymix_command("MIXINL IN2L Volume", "5");//set mixer boost gain to 6db
-
 }
 static void set_audio_route(bool enable)
 {
