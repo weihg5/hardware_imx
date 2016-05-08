@@ -411,11 +411,11 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_CAPTURE_VOLUME,
-        .intval = 60,
+        .intval = 50,
     },
     {
         .ctl_name = WM8962_DIGITAL_CAPTURE_VOLUME,
-        .intval = 126,
+        .intval = 110,
     },
     {
         .ctl_name = WM8962_INPGAL_IN2L_SWITCH,
@@ -427,7 +427,7 @@ static struct route_setting mm_main_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_MIXINL_PGA_VOLUME,
-        .intval = 60,
+        .intval = 50,
     },
 #if 0
     {
