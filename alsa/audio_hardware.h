@@ -67,6 +67,7 @@ struct audio_card{
     struct route_setting *speaker_output;
     struct route_setting *hs_output;
     struct route_setting *earpiece_output;
+	struct route_setting *call_speaker_output;
     struct route_setting *vx_hs_mic_input;
     struct route_setting *mm_main_mic_input;
     struct route_setting *vx_main_mic_input;

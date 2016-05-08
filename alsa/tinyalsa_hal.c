@@ -439,7 +439,7 @@ static void update_voice_volume(struct imx_audio_device *adev)
 	val = MIN_OUT_VOLUME +((MAX_OUT_VOLUME-MIN_OUT_VOLUME) * adev->voice_volume);
 
 	if (adev->out_device & AUDIO_DEVICE_OUT_EARPIECE)
-		set_alsa_ctl_value(adev, WM8962_HEADPHONE_VOLUME, val);
+		set_alsa_ctl_value(adev, "Headphone VolumeL", val);
 	if(adev->out_device & AUDIO_DEVICE_OUT_SPEAKER)
 		set_alsa_ctl_value(adev, WM8962_SPEAKER_VOLUME, val);
 }
@@ -456,7 +456,8 @@ static void select_output_device(struct imx_audio_device *adev)
     bool tty_volume = false;
     unsigned int channel;
     int i;
-
+	bool is_incall = adev->mode == AUDIO_MODE_IN_CALL;
+	
     headset_on      = adev->out_device & AUDIO_DEVICE_OUT_WIRED_HEADSET;
     headphone_on    = adev->out_device & AUDIO_DEVICE_OUT_WIRED_HEADPHONE;
     speaker_on      = adev->out_device & AUDIO_DEVICE_OUT_SPEAKER;
@@ -502,12 +503,17 @@ static void select_output_device(struct imx_audio_device *adev)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->speaker_output, speaker_on);
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_output, earpiece_on);
+	for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+		set_route_by_array(adev->mixer[i], adev->card_list[i]->call_speaker_output, is_incall?1:0);
 
     /* Special case: select input path if in a call, otherwise
        in_set_parameters is used to update the input route
        todo: use sub mic for handsfree case */
     if (adev->mode == AUDIO_MODE_IN_CALL) {
         cavan_set_audio_mode(adev, AUDIO_MODE_IN_CALL); // Add By Fuang.Cao: 2016-04-03
+        
+		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+			set_route_by_array(adev->mixer[i], adev->card_list[i]->call_speaker_output, speaker_on);
 
         if (bt_on)
             for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
