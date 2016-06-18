@@ -221,7 +221,7 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
             continue;
         }
 		if (ioctl(mCameraHandle, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) >= 0){
-			if (strstr(vid_chip.match.name, info.name)){
+			if (!strcmp(vid_chip.match.name, info.name)){
 				ALOGE("Switch to %s\n", info.name);
 				break;
 			}

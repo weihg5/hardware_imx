@@ -460,7 +460,7 @@ int GetDevPath(const char  *pCameraName,
 					if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
 						continue;
 					}
-					if (strstr(vid_chip.match.name, pCameraName)) {
+					if (!strcmp(vid_chip.match.name, pCameraName)) {
 						// fsl csi/mipi camera name and path match
 						if (pathLen > strlen(dev_node)) {
 							strcpy(pCameraDevPath, dev_node);
