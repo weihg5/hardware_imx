@@ -164,6 +164,7 @@ protected:
     sp<MetadaManager> mMetadaManager;
 	int mSensorPicSize[MAX_RESOLUTION_SIZE*2];
 	int mCrop;
+	int mFocus;
 public:
 	int mCpuNum;
     unsigned char *mVPUPhyAddr[MAX_PREVIEW_BUFFER];
