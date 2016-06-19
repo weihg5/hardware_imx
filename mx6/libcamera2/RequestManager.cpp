@@ -112,7 +112,6 @@ void RequestManager::action_triger(int32_t action, int32_t ext1, int32_t ext2)
 			camera_flash(0);
 			flash_need_close = 0;
 		}
-		mDeviceAdapter->cancelAutoFocus();
 	}
 }
 

@@ -746,15 +746,13 @@ status_t DeviceAdapter::autoFocus()
 
     return NO_ERROR;
 #else
-	mFocus = 1;
 	return autoFocusThread();
 #endif
 }
 
 status_t DeviceAdapter::cancelAutoFocus()
 {
-	mFocus = 0;
-    return autoFocusThread();
+    return NO_ERROR;
 }
 
 int DeviceAdapter::autoFocusThread()
@@ -762,7 +760,7 @@ int DeviceAdapter::autoFocusThread()
 	struct v4l2_control ctrl;
 	ALOGE("auto Focus Thread\n");
 	ctrl.id = V4L2_CID_FOCUS_AUTO;
-	ctrl.value = mFocus;
+	ctrl.value = 0;
 	if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
 		ALOGE("set auto focus failt\n");
 		return UNKNOWN_ERROR;

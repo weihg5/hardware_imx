@@ -673,10 +673,8 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
             tag, data, count) ) != OK ) return ret
 
 	static uint32_t max3ARegin = 1;
-	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
-		!strcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
+	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname))
 		max3ARegin = 0;
-	FLOGE("================mSensorInfo->mSensorname=%s, max3ARegin=%d\n", mSensorInfo->mSensorname, max3ARegin);
 	ADD_OR_SIZE(ANDROID_CONTROL_MAX_REGIONS, &max3ARegin, 1);
     // android.lens
     if ( !strcmp("ov5640_mipi", mSensorInfo->mSensorname)){
@@ -770,8 +768,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
 
     // android.flash
     uint8_t flashAvailable = 1;
-	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
-		!strcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
+	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname))
 	{
 		flashAvailable = 0;
 	}
