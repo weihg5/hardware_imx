@@ -449,14 +449,7 @@ int GetDevPath(const char  *pCameraName,
                 continue;
             } else if (v4l2_cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
 				for (int i = 0; i < 2; i++) {
-					struct v4l2_control ctrl;
-					ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
-					ctrl.value = i;
-					if (ioctl(fd, VIDIOC_S_CTRL, &ctrl) < 0) {
-						ALOGE("set ctrl switch camera failed\n");
-						continue;
-					}
-
+					vid_chip.ident = i;
 					if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
 						continue;
 					}

@@ -210,22 +210,25 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
     if (info.devPath[0] != '\0') {
         mCameraHandle = open(info.devPath, O_RDWR);
     }
-
-	for (int i = 0; i < 2; i++) {
+	int i = 0;
+	for (i = 0; i < 2; i++) {
 		struct v4l2_dbg_chip_ident vid_chip;
-		struct v4l2_control ctrl;
-        ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
-        ctrl.value = i;
-        if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
-            ALOGE("set ctrl switch camera failed\n");
-            continue;
-        }
+		vid_chip.ident = i;
 		if (ioctl(mCameraHandle, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) >= 0){
 			if (!strcmp(vid_chip.match.name, info.name)){
 				ALOGE("Switch to %s\n", info.name);
 				break;
 			}
 		}
+	}
+	if (i < 2){
+		struct v4l2_control ctrl;
+        ctrl.id = V4L2_CID_MXC_SWITCH_CAM;
+        ctrl.value = i;
+        if (ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl) < 0) {
+            ALOGE("set ctrl switch camera failed\n");
+            //continue;
+        }
 	}
     if (mCameraHandle < 0) {
         memset((void*)info.devPath, 0, sizeof(info.devPath));
