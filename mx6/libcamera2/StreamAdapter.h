@@ -130,6 +130,7 @@ protected:
     int mTotalFrames;
     int mFps;
     void *g2dHandle;
+	bool mResize;
 };
 
 

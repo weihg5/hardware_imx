@@ -113,6 +113,10 @@ status_t Ov5640Mipi::initSensorInfo(const CameraInfo& info)
         }
     } // end while
 
+	mPictureResolutions[pictureCnt++] = 3264;
+	mPictureResolutions[pictureCnt++] = 2448;
+
+
     mPreviewResolutionCount = previewCnt;
     mPictureResolutionCount = pictureCnt;
 

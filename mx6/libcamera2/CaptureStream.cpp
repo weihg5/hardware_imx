@@ -213,6 +213,10 @@ status_t CaptureStream::makeJpegImage(StreamBuffer *dstBuf, StreamBuffer *srcBuf
     JpegParams *mainJpeg = NULL, *thumbJpeg = NULL;
     void *rawBuf = NULL, *thumbBuf = NULL;
     size_t imageSize = 0;
+	int saveh = srcBuf->mWidth;
+	int savew = srcBuf->mHeight;
+	int tempw = srcBuf->mWidth;
+	int temph = srcBuf->mHeight;
 
     if (dstBuf == NULL || srcBuf == NULL) {
         FLOGE("%s invalid param", __FUNCTION__);
@@ -255,12 +259,18 @@ status_t CaptureStream::makeJpegImage(StreamBuffer *dstBuf, StreamBuffer *srcBuf
         thumbQuality = 100;
     }
 
+	FLOGE("&&&&&&&&& w=%d, h=%d\r\n", tempw, temph);
+	if (mResize){
+		tempw = 3264;
+		temph = 2448;
+	}
+
     mainJpeg = new JpegParams((uint8_t *)srcBuf->mVirtAddr,
                        (uint8_t *)srcBuf->mPhyAddr,
                        srcBuf->mSize, (uint8_t *)rawBuf,
                        srcBuf->mSize, encodeQuality,
                        srcBuf->mWidth, srcBuf->mHeight,
-                       srcBuf->mWidth, srcBuf->mHeight,
+                       tempw, temph,
                        mActualFormat);
 
     ret = mMetadaManager->getJpegThumbSize(thumbWidth, thumbHeight);
@@ -303,7 +313,16 @@ status_t CaptureStream::makeJpegImage(StreamBuffer *dstBuf, StreamBuffer *srcBuf
                            mActualFormat);
     }
 
+	if (mResize){
+		srcBuf->mWidth = 3264;
+		srcBuf->mHeight = 2448;		
+	}
+
     mJpegBuilder->prepareImage(srcBuf);
+	if (mResize){
+		srcBuf->mWidth = saveh;
+		srcBuf->mHeight = savew;			
+	}	
     ret = mJpegBuilder->encodeImage(mainJpeg, thumbJpeg);
     if (ret != NO_ERROR) {
         FLOGE("%s encodeImage failed", __FUNCTION__);

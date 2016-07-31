@@ -110,6 +110,13 @@ StreamAdapter::~StreamAdapter()
 
 int StreamAdapter::initialize(int width, int height, int format, int usage, int bufferNum)
 {
+	mResize = 0;
+	if (width == 3264){
+		width = 2592;
+		height = 1944;
+		mResize = 1;
+	}
+
     mWidth = width;
     mHeight = height;
     mFormat = format;
