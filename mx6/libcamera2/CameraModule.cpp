@@ -451,7 +451,8 @@ int GetDevPath(const char  *pCameraName,
 				for (int i = 0; i < 2; i++) {
 					vid_chip.ident = i;
 					if (ioctl(fd, VIDIOC_DBG_G_CHIP_IDENT, &vid_chip) < 0) {
-						continue;
+						retCode = -2;
+						break;
 					}
 					if (!strcmp(vid_chip.match.name, pCameraName)) {
 						// fsl csi/mipi camera name and path match
@@ -472,6 +473,10 @@ int GetDevPath(const char  *pCameraName,
             fd = 0;
 			if (retCode == 0)
 				break;
+			if (retCode == -2){
+				retCode = -1;
+				break;
+			}
         }
         closedir(v4l_dir);
     }

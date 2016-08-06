@@ -219,6 +219,8 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
 				ALOGE("Switch to %s\n", info.name);
 				break;
 			}
+		}else{
+			break;
 		}
 	}
 	if (i < 2){
