@@ -20,7 +20,13 @@
 #include <hardware/hardware.h>
 #include "NV12_resize.h"
 #include "vpu_wrapper.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+void nv12_resze(uint8_t *srcBuf, int srcW, int srcH, uint8_t *dstBuf, int dstW, int dstH);
+#ifdef __cplusplus
+}
+#endif
 
 #define Align(ptr,align)	(((unsigned int)ptr+(align)-1)/(align)*(align))
 #define VPU_ENC_MAX_NUM_MEM_REQS	(6)
@@ -470,20 +476,34 @@ int YuvToJpegEncoder::encode(void *inYuv,
     jpegBuilder_error_mgr sk_err;
     uint8_t *resize_src = NULL;
     jpegBuilder_destination_mgr dest_mgr((uint8_t *)outBuf, outSize);
-
-
+	struct timeval tv, tv1;
+	gettimeofday(&tv, NULL);
+	FLOGE("start resize...");
     memset(&cinfo, 0, sizeof(cinfo));
     if ((inWidth != outWidth) || (inHeight != outHeight)) {
         resize_src = (uint8_t *)malloc(outSize);
+#if 1	
+        nv12_resze((uint8_t *)inYuv,
+                  inWidth,
+                  inHeight,
+                  resize_src,
+                  outWidth,
+                  outHeight);
+#else
         yuvResize((uint8_t *)inYuv,
                   inWidth,
                   inHeight,
                   resize_src,
                   outWidth,
                   outHeight);
+#endif
+		
         inYuv = resize_src;
     }
-
+	gettimeofday(&tv1, NULL);
+	FLOGE("end resize..., %ld", (tv1.tv_sec-tv.tv_sec)*1000 + (tv1.tv_usec-tv.tv_usec)/1000);
+	gettimeofday(&tv, NULL);
+	FLOGE("start encoder...");
     cinfo.err = jpeg_std_error(&sk_err);
     jpeg_create_compress(&cinfo);
 
@@ -499,7 +519,8 @@ int YuvToJpegEncoder::encode(void *inYuv,
     if (resize_src != NULL) {
         free(resize_src);
     }
-
+	gettimeofday(&tv1, NULL);
+	FLOGE("end encoder...%ld", (tv1.tv_sec-tv.tv_sec)*1000 + (tv1.tv_usec-tv.tv_usec)/1000);
     return dest_mgr.jpegsize;
 }
 

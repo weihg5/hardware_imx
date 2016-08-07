@@ -41,6 +41,7 @@ LOCAL_SRC_FILES:=    \
     PhysMemAdapter.cpp \
     YuvToJpegEncoder.cpp \
     NV12_resize.c \
+    n12resize.c \
     UvcMJPGDevice.cpp
 
 LOCAL_CPPFLAGS +=
@@ -72,7 +73,8 @@ LOCAL_C_INCLUDES += \
 	external/jhead \
         device/fsl-proprietary/include \
         external/fsl_vpu_omx/OpenMAXIL/src/component/vpu_wrapper \
-        external/fsl_imx_omx/OpenMAXIL/src/component/vpu_wrapper
+        external/fsl_imx_omx/OpenMAXIL/src/component/vpu_wrapper \
+        hardware/imx/ffmpeg_lib/include
 
 ifeq ($(HAVE_FSL_IMX_CODEC),true)
     #LOCAL_SHARED_LIBRARIES += libfsl_jpeg_enc_arm11_elinux
@@ -89,7 +91,7 @@ endif
 #LOCAL_CPPFLAGS += -DV4L2_CAMERA_SWITCH
 
 LOCAL_CPPFLAGS += -Werror
-
+LOCAL_LDFLAGS +=-Lhardware/imx/ffmpeg_lib/lib -lswscale  -lavutil
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE:= camera.$(TARGET_BOARD_PLATFORM)
 
