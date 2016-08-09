@@ -147,3 +147,112 @@ int PhysMemAdapter::freeBuffers()
     dispatchBuffers(NULL, 0, BUFFER_DESTROY);
     return NO_ERROR;
 }
+
+int PhysMemAdapter::allocMybuffer(int width,int height,
+                                   int format, CameraFrame *pFrame)
+{
+    if (mIonFd <= 0) {
+        FLOGE("try to allocate buffer from ion in preview or ion invalid");
+        return BAD_VALUE;
+    }
+
+    int size = 0;
+    if ((width == 0) || (height == 0)) {
+        FLOGE("allocateBufferFromIon: width or height = 0");
+        return BAD_VALUE;
+    }
+    switch (format) {
+        case HAL_PIXEL_FORMAT_YCbCr_420_SP:
+            size = width * ((height + 16) & (~15)) * 3 / 2;
+            break;
+
+        case HAL_PIXEL_FORMAT_YCbCr_420_P:
+            size = width * height * 3 / 2;
+            break;
+
+        case HAL_PIXEL_FORMAT_YCbCr_422_I:
+            size = width * height * 2;
+            break;
+
+        default:
+            FLOGE("Error: format not supported int ion alloc");
+            return BAD_VALUE;
+    }
+
+    unsigned char *ptr = NULL;
+    int sharedFd;
+    int phyAddr;
+    ion_user_handle_t ionHandle;
+    size = (size + PAGE_SIZE) & (~(PAGE_SIZE - 1));
+
+    int numBufs = 1;
+
+    FLOGI("allocateBufferFromIon buffer num:%d", numBufs);
+    for (int i = 0; i < numBufs; i++) {
+        ionHandle = -1;
+        int err = ion_alloc(mIonFd, size, 8, 1, 0, &ionHandle);
+        if (err) {
+            FLOGE("ion_alloc failed.");
+            return BAD_VALUE;
+        }
+
+        err = ion_map(mIonFd,
+                      ionHandle,
+                      size,
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED,
+                      0,
+                      &ptr,
+                      &sharedFd);
+        if (err) {
+            FLOGE("ion_map failed.");
+            return BAD_VALUE;
+        }
+        phyAddr = ion_phys(mIonFd, ionHandle);
+        if (phyAddr == 0) {
+            FLOGE("ion_phys failed.");
+            return BAD_VALUE;
+        }
+        FLOG_RUNTIME("phyalloc ptr:0x%x, phy:0x%x, size:%d",
+                     (int)ptr,
+                     phyAddr,
+                     size);
+        pFrame->reset();
+        pFrame->mIndex     = i;
+        pFrame->mWidth     = width;
+        pFrame->mHeight    = height;
+        pFrame->mFormat    = format;
+        pFrame->mVirtAddr  = ptr;
+        pFrame->mPhyAddr   = phyAddr;
+        pFrame->mSize      =  size;
+        pFrame->mBufHandle = (buffer_handle_t)ionHandle;
+        pFrame->mpFrameBuf  = NULL;
+        pFrame->mBindUVCBufIdx = -1;
+
+        FLOGI("PhysMemAdapter::allocateBuffers, i %d, phyAddr 0x%x,", i, phyAddr);
+    }
+
+
+    return NO_ERROR;
+}
+
+int PhysMemAdapter::freeBuffers(CameraFrame *pFrame)
+{
+    if (mIonFd <= 0) {
+        FLOGE("try to free buffer from ion in preview or ion invalid");
+        return BAD_VALUE;
+    }
+
+    FLOGI("freeBufferToIon buffer");
+    for (int i = 0; i < 1; i++) {
+        ion_user_handle_t ionHandle =
+            (ion_user_handle_t)pFrame->mBufHandle;
+        ion_free(mIonFd, ionHandle);
+        munmap(pFrame->mVirtAddr, pFrame->mSize);
+    }
+
+    memset(pFrame, 0, sizeof(CameraFrame));
+
+    return NO_ERROR;
+}
+

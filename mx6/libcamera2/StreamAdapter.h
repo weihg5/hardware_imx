@@ -184,6 +184,7 @@ private:
     bool mVideoSnapShot;
     PhysMemAdapter *mPhysMemAdapter;
     sp<JpegBuilder> mJpegBuilder;
+	CameraFrame mFrame;//temp frame for ipu resize
 };
 
 #endif

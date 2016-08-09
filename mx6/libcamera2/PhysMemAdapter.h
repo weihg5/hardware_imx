@@ -36,7 +36,9 @@ public:
     //virtual int maxQueueableBuffers();
 
     // void setErrorListener(CameraErrorListener* listener);
-
+	int allocMybuffer(int width,int height,
+                                   int format, CameraFrame *pFrame);
+	int freeBuffers(CameraFrame *pFrame);
 protected:
     int mIonFd;
     CameraErrorListener *mErrorListener;
