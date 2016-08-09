@@ -42,6 +42,7 @@ LOCAL_SRC_FILES:=    \
     YuvToJpegEncoder.cpp \
     NV12_resize.c \
     n12resize.c \
+    ipu_resize.c \
     UvcMJPGDevice.cpp
 
 LOCAL_CPPFLAGS +=
