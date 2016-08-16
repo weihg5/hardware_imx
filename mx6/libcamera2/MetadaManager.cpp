@@ -660,6 +660,13 @@ status_t MetadaManager::getRequestStreams(camera_metadata_entry_t *reqStreams)
                 ANDROID_REQUEST_OUTPUT_STREAMS, reqStreams);
 }
 
+static int mystrcmp(const char *s1, const char *s2){
+	if (strlen(s1) != strlen(s2))
+		return 1;
+
+	return strcmp(s1, s2);
+}
+
 status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequest)
 {
     size_t entryCount = 0;
@@ -673,13 +680,13 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
             tag, data, count) ) != OK ) return ret
 
 	static uint32_t max3ARegin = 1;
-	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
-		!strcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
+	if ( !mystrcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
+		!mystrcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
 		max3ARegin = 0;
 	FLOGE("================mSensorInfo->mSensorname=%s, max3ARegin=%d\n", mSensorInfo->mSensorname, max3ARegin);
 	ADD_OR_SIZE(ANDROID_CONTROL_MAX_REGIONS, &max3ARegin, 1);
     // android.lens
-    if ( !strcmp("ov5640_mipi", mSensorInfo->mSensorname)){
+    if ( !mystrcmp("ov5640_mipi", mSensorInfo->mSensorname)){
     	static float minFocusDistance[] ={0.1f, 0.2f};
     	ADD_OR_SIZE(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
             	&minFocusDistance, sizeof(minFocusDistance)/sizeof(float));
@@ -770,8 +777,8 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
 
     // android.flash
     uint8_t flashAvailable = 1;
-	if ( !strcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
-		!strcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
+	if ( !mystrcmp("ov5645_mipi", mSensorInfo->mSensorname) || 
+		!mystrcmp("ov5640_mipi_front", mSensorInfo->mSensorname))
 	{
 		flashAvailable = 0;
 	}
@@ -926,7 +933,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     ADD_OR_SIZE(ANDROID_CONTROL_AWB_AVAILABLE_MODES,
             availableAwbModes, sizeof(availableAwbModes));
 
-	if ( !strcmp("ov5640_mipi", mSensorInfo->mSensorname)){
+	if ( !mystrcmp("ov5640_mipi", mSensorInfo->mSensorname)){
     	static const uint8_t availableAfModes[] = {
             	ANDROID_CONTROL_AF_MODE_OFF,
 				ANDROID_CONTROL_AF_MODE_AUTO
