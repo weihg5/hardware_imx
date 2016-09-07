@@ -16,6 +16,7 @@
 
 #include "RequestManager.h"
 static int flash_need_close;
+static int m_flashTorchMode ;
 static void camera_flash(int enable)
 {
 	FILE *fp = fopen("/sys/bus/i2c/devices/4-003c/triger_flash", "r+");
@@ -221,7 +222,20 @@ bool RequestManager::handleRequest()
             mPendingRequests--;
             sem_post(&mThreadExitSem);
             return false;
-        }
+        }else {
+                uint8_t mode = ANDROID_FLASH_MODE_OFF;
+                mMetadaManager->getFlashMode(mode);
+		FLOGE("flash mode=%d\r\n", mode);
+                if ((m_flashTorchMode == 0) && (mode == ANDROID_FLASH_MODE_TORCH)) {
+                	camera_flash(1);
+                 	flash_need_close = 1;
+			m_flashTorchMode = 1;
+                }else if ((m_flashTorchMode == 1) && (mode == ANDROID_FLASH_MODE_OFF)){
+			camera_flash(0);
+			m_flashTorchMode = 0;
+			flash_need_close = 0;
+		}
+	}
 
         int requestType = 0;
         mMetadaManager->getRequestType(&requestType);
