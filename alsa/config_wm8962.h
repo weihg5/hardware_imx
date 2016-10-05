@@ -30,12 +30,13 @@
 
 #ifdef MODEM_EC20
 #define WM8962_AUDIO_MODE_CALL                "Call"
+#define WM8962_AUDIO_MODE_BT_CALL             "BtCall"
 #else
 #define WM8962_AUDIO_MODE_CALL                "SlaveCall"
+#define WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
 #endif
 
 #define WM8962_AUDIO_MODE_BT_MUSIC            "BtSlaveMusic"
-#define WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
 
 #define WM8962_PGA_MUX_DAC                    "DAC"
 #define WM8962_PGA_MUX_MIXER                  "Mixer"
@@ -605,7 +606,7 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
         .intval = 7,
     },
 #else
-#ifdef MODEM_EC20
+#if 0 // def MODEM_EC20
 	{
 		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
 		.intval = 0,
@@ -646,6 +647,40 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
         .ctl_name = WM8962_HEADPHONE_VOLUME,
         .intval = WM8962_HEADPHONE_VOLUME_VALUE,
     },
+#endif
+#if 1
+	{
+		.ctl_name = WM8962_SPEAKER_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPEAKER_VOLUME,
+		.intval = WM8962_SPEAKER_VOLUME_VALUE,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTL_DACL_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_DACL_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPEAKER_MIXER_SWITCH,
+		.intval = 1,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTL_PGA,
+		.strval = WM8962_PGA_MUX_MIXER,
+	},
+	{
+		.ctl_name = WM8962_SPKOUTR_PGA,
+		.strval = WM8962_PGA_MUX_MIXER,
+	},
+	{
+		.ctl_name = WM8962_SPEAKER_JACK_SWITCH,
+		.intval = 1,
+	},
 #endif
     {
         .ctl_name = NULL,
