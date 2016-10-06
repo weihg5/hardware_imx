@@ -51,9 +51,11 @@
 #define WM8962_SPKOUTR_PGA                    "SPKOUTR PGA"
 #define WM8962_SPKOUTL_IN4L_SWITCH            "SPKOUTL Mixer IN4L Switch"
 #define WM8962_SPKOUTL_DACL_SWITCH            "SPKOUTL Mixer DACL Switch"
+#define WM8962_SPKOUTL_DACR_SWITCH            "SPKOUTL Mixer DACR Switch"
 #define WM8962_SPKOUTL_MIXINL_SWITCH          "SPKOUTL Mixer MIXINL Switch"
 #define WM8962_SPKOUTR_IN4L_SWITCH            "SPKOUTR Mixer IN4L Switch"
 #define WM8962_SPKOUTR_DACL_SWITCH            "SPKOUTR Mixer DACL Switch"
+#define WM8962_SPKOUTR_DACR_SWITCH            "SPKOUTR Mixer DACR Switch"
 #define WM8962_SPKOUTR_MIXINL_SWITCH          "SPKOUTR Mixer MIXINL Switch"
 
 #define WM8962_HEADPHONE_VOLUME               "Headphone Volume"
@@ -590,64 +592,24 @@ static struct route_setting vx_bt_mic_input_wm8962[] = {
     },
     {
         .ctl_name = WM8962_CAPTURE_VOLUME,
-        .intval = 63,
+        .intval = 50,
     },
     {
         .ctl_name = WM8962_DIGITAL_CAPTURE_VOLUME,
-        .intval = 127,
+        .intval = 110,
     },
-#if 0
     {
-        .ctl_name = WM8962_MIXINR_IN3R_SWITCH,
+        .ctl_name = WM8962_INPGAL_IN2L_SWITCH,
         .intval = 1,
     },
     {
-        .ctl_name = WM8962_MIXINR_IN3R_VOLUME,
-        .intval = 7,
-    },
-#else
-#if 0 // def MODEM_EC20
-	{
-		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
-		.intval = 0,
-	},
-#else
-	{
-		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
-		.intval = 1,
-	},
-#endif
-	{
-		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = WM8962_MIXINL_PGA_VALUE,
-	},
-#endif
-#if 0 // WM8962_DEBUG
-    {
-        .ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
+        .ctl_name = WM8962_MIXINL_PGA_SWITCH,
         .intval = 1,
     },
     {
-        .ctl_name = WM8962_HPMIXL_MIXINR_SWITCH,
-        .intval = 1,
+        .ctl_name = WM8962_MIXINL_PGA_VOLUME,
+        .intval = 50,
     },
-    {
-        .ctl_name = WM8962_HEADPHONE_MIXER_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HPOUTL_PGA,
-        .strval = WM8962_PGA_MUX_MIXER,
-    },
-    {
-        .ctl_name = WM8962_HEADPHONE_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
-    },
-#endif
 #if 1
 	{
 		.ctl_name = WM8962_SPEAKER_SWITCH,
