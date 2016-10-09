@@ -29,7 +29,7 @@
 #define WM8962_AUDIO_MODE_MUSIC               "SlaveMusic"
 
 #ifdef MODEM_EC20
-#define WM8962_AUDIO_MODE_CALL                "Call"
+#define WM8962_AUDIO_MODE_CALL                "BtCall"
 #define WM8962_AUDIO_MODE_BT_CALL             "BtCall"
 #else
 #define WM8962_AUDIO_MODE_CALL                "SlaveCall"
