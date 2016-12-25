@@ -658,11 +658,11 @@ static struct route_setting audio_mode_normal_wm8962[] = {
         .ctl_name = WM8962_AUDIO_MODE,
         .strval = WM8962_AUDIO_MODE_MUSIC,
     },
-#if WM8962_MIXINL_PGA_VALUE
 	{
 		.ctl_name = WM8962_INPGAL_IN4L_SWITCH,
 		.intval = 0,
 	},
+#if WM8962_MIXINL_PGA_VALUE
 	{
 		.ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
 		.intval = 0,
