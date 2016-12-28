@@ -29,13 +29,14 @@
 #define WM8962_AUDIO_MODE_MUSIC               "SlaveMusic"
 
 #ifdef MODEM_EC20
-#define WM8962_AUDIO_MODE_CALL                "Call"
+#define WM8962_AUDIO_MODE_CALL                "BtCall"
+#define WM8962_AUDIO_MODE_BT_CALL             "BtCall"
 #else
 #define WM8962_AUDIO_MODE_CALL                "SlaveCall"
+#define WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
 #endif
 
 #define WM8962_AUDIO_MODE_BT_MUSIC            "BtSlaveMusic"
-#define WM8962_AUDIO_MODE_BT_CALL             "BtSlaveCall"
 
 #define WM8962_PGA_MUX_DAC                    "DAC"
 #define WM8962_PGA_MUX_MIXER                  "Mixer"
@@ -50,9 +51,11 @@
 #define WM8962_SPKOUTR_PGA                    "SPKOUTR PGA"
 #define WM8962_SPKOUTL_IN4L_SWITCH            "SPKOUTL Mixer IN4L Switch"
 #define WM8962_SPKOUTL_DACL_SWITCH            "SPKOUTL Mixer DACL Switch"
+#define WM8962_SPKOUTL_DACR_SWITCH            "SPKOUTL Mixer DACR Switch"
 #define WM8962_SPKOUTL_MIXINL_SWITCH          "SPKOUTL Mixer MIXINL Switch"
 #define WM8962_SPKOUTR_IN4L_SWITCH            "SPKOUTR Mixer IN4L Switch"
 #define WM8962_SPKOUTR_DACL_SWITCH            "SPKOUTR Mixer DACL Switch"
+#define WM8962_SPKOUTR_DACR_SWITCH            "SPKOUTR Mixer DACR Switch"
 #define WM8962_SPKOUTR_MIXINL_SWITCH          "SPKOUTR Mixer MIXINL Switch"
 
 #define WM8962_HEADPHONE_VOLUME               "Headphone Volume"
@@ -159,6 +162,32 @@ static struct route_setting wm8962_ppt_mode[] = {
 
 
 static struct route_setting bt_output_wm8962[] = {
+#ifdef MODEM_EC20
+	{
+		.ctl_name = "HPMIXR DACL Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "HPMIXR MIXINL Switch",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "HPOUTR PGA",
+		.strval = "Mixer",
+	},
+	{
+		.ctl_name = "Headphone MixerR Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Headphone SwitchR",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Headphone VolumeR",
+		.intval = 100,
+	},
+#endif
     {
         .ctl_name = NULL,
     },
@@ -583,69 +612,35 @@ static struct route_setting mm_hs_mic_input_wm8962[] = {
 };
 
 static struct route_setting vx_bt_mic_input_wm8962[] = {
-    {
-        .ctl_name = WM8962_CAPTURE_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_CAPTURE_VOLUME,
-        .intval = 63,
-    },
-    {
-        .ctl_name = WM8962_DIGITAL_CAPTURE_VOLUME,
-        .intval = 127,
-    },
-#if 0
-    {
-        .ctl_name = WM8962_MIXINR_IN3R_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_MIXINR_IN3R_VOLUME,
-        .intval = 7,
-    },
-#else
 #ifdef MODEM_EC20
 	{
-		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
-		.intval = 0,
-	},
-#else
-	{
-		.ctl_name = WM8962_MIXINL_IN2L_SWITCH,
+		.ctl_name = WM8962_CAPTURE_SWITCH,
 		.intval = 1,
 	},
-#endif
+	{
+		.ctl_name = WM8962_CAPTURE_VOLUME,
+		.intval = 18,
+	},
+	{
+		.ctl_name = WM8962_DIGITAL_CAPTURE_VOLUME,
+		.intval = 100,
+	},
+	{
+		.ctl_name = WM8962_INPGAL_IN2L_SWITCH,
+		.intval = 0,
+	},
+	{
+		.ctl_name = WM8962_INPGAL_IN4L_SWITCH,
+		.intval = 1,
+	},
 	{
 		.ctl_name = WM8962_MIXINL_PGA_SWITCH,
-		.intval = WM8962_MIXINL_PGA_VALUE,
+		.intval = 1,
 	},
-#endif
-#if 0 // WM8962_DEBUG
-    {
-        .ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HPMIXL_MIXINR_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HEADPHONE_MIXER_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HPOUTL_PGA,
-        .strval = WM8962_PGA_MUX_MIXER,
-    },
-    {
-        .ctl_name = WM8962_HEADPHONE_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = WM8962_HEADPHONE_VOLUME,
-        .intval = WM8962_HEADPHONE_VOLUME_VALUE,
-    },
+	{
+		.ctl_name = WM8962_MIXINL_PGA_VOLUME,
+		.intval = 50,
+	},
 #endif
     {
         .ctl_name = NULL,
@@ -663,11 +658,11 @@ static struct route_setting audio_mode_normal_wm8962[] = {
         .ctl_name = WM8962_AUDIO_MODE,
         .strval = WM8962_AUDIO_MODE_MUSIC,
     },
-#if WM8962_MIXINL_PGA_VALUE
 	{
 		.ctl_name = WM8962_INPGAL_IN4L_SWITCH,
 		.intval = 0,
 	},
+#if WM8962_MIXINL_PGA_VALUE
 	{
 		.ctl_name = WM8962_HPMIXL_MIXINL_SWITCH,
 		.intval = 0,
